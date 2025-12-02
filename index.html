@@ -19,7 +19,11 @@
 
     <div class="container">
 
+        <!-- ============================================ -->
+        <!-- TOPメニュー画面 -->
+        <!-- ============================================ -->
         <div id="p-home" class="page active">
+            <!-- (A) 試薬 -->
             <div class="section-card color-green">
                 <div class="cat-title">A. 試薬・物品管理</div>
                 <div class="icon-grid">
@@ -32,6 +36,7 @@
                     <div class="icon-btn-simple" onclick="openGuide('reagent-duty')"><i class="fa-solid fa-people-carry-box"></i><span>試薬調製担当</span></div>
                 </div>
             </div>
+            <!-- (B) 実験 -->
             <div class="section-card color-orange">
                 <div class="cat-title">B. 実験フロー</div>
                 <div class="icon-grid">
@@ -46,6 +51,7 @@
                     </div>
                 </div>
             </div>
+            <!-- (C) 解析 -->
             <div class="section-card color-blue">
                 <div class="cat-title">C. 解析・ソフト</div>
                 <div class="icon-grid">
@@ -63,6 +69,7 @@
                     </div>
                 </div>
             </div>
+            <!-- (D) 機器 -->
             <div class="section-card color-red">
                 <div class="cat-title">D. 機器・安全</div>
                 <div class="icon-grid">
@@ -76,6 +83,7 @@
                     <div class="icon-btn-simple" onclick="showPage('p-coming-soon')"><i class="fa-solid fa-door-open"></i><span>退出時の<br>確認事項</span></div>
                 </div>
             </div>
+            <!-- (E) 運営 -->
             <div class="section-card color-purple">
                 <div class="cat-title">E. 運営・その他</div>
                 <div class="icon-grid">
@@ -84,6 +92,7 @@
                     <div class="icon-btn-simple" onclick="window.open('https://drive.google.com/drive/u/1/folders/1C0MbYu9U5cO83mwuMgYV6aR6Xy5CnsEv', '_blank')"><i class="fa-solid fa-graduation-cap"></i><span>卒論/修論ルール</span></div>
                 </div>
             </div>
+            <!-- (F) 予約 -->
             <div class="section-card color-teal">
                 <div class="cat-title">F. 予約表</div>
                 <div class="icon-grid">
@@ -93,6 +102,11 @@
             </div>
         </div>
 
+        <!-- ============================================ -->
+        <!-- 中間メニュー（リンク集）ページ -->
+        <!-- ============================================ -->
+
+        <!-- 発注・受取メニュー -->
         <div id="p-order" class="page">
             <button class="back-btn" onclick="showPage('p-home')"><i class="fa-solid fa-arrow-left"></i> TOPへ戻る</button>
             <div class="section-card color-green">
@@ -104,6 +118,7 @@
             </div>
         </div>
 
+        <!-- 調製一覧メニュー -->
         <div id="p-reagent-list" class="page">
             <button class="back-btn" onclick="showPage('p-home')"><i class="fa-solid fa-arrow-left"></i> TOPへ戻る</button>
             <div class="section-card color-green">
@@ -126,6 +141,7 @@
             </div>
         </div>
 
+        <!-- 播種メニュー -->
         <div id="p-exp-seeding" class="page">
             <button class="back-btn" onclick="showPage('p-home')"><i class="fa-solid fa-arrow-left"></i> TOPへ戻る</button>
             <div class="section-card color-orange">
@@ -146,7 +162,45 @@
                 </ul>
             </div>
         </div>
-        
+
+        <!-- ★ここが今回追加された部分：AMC加工メニュー -->
+        <div id="p-amc-menu" class="page">
+            <button class="back-btn" onclick="showPage('p-exp-seeding')"><i class="fa-solid fa-arrow-left"></i> 播種メニューへ戻る</button>
+            <div class="section-card color-orange">
+                <div class="cat-title">AMC加工メニュー</div>
+                <ul class="menu-list">
+                    <li><div class="menu-btn" onclick="showPage('p-amc-coating')">1. アガロースコート <i class="fa-solid fa-chevron-right"></i></div></li>
+                    <li><div class="menu-btn" onclick="showPage('p-amc-laser')">2. レーザー加工 <i class="fa-solid fa-chevron-right"></i></div></li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 培養・計測メニュー -->
+        <div id="p-exp-measure" class="page">
+            <button class="back-btn" onclick="showPage('p-home')"><i class="fa-solid fa-arrow-left"></i> TOPへ戻る</button>
+            <div class="section-card color-orange">
+                <div class="cat-title">培養・計測</div>
+                <ul class="menu-list">
+                    <li><div class="menu-btn" onclick="showPage('p-mea-measurement')">MEA計測 <i class="fa-solid fa-chevron-right"></i></div></li>
+                    <li><div class="menu-btn" onclick="window.open('https://drive.google.com/file/d/1ldC2vfBFAZ_5h8NMRc_v0tRhNLkJdlMJ/view?usp=sharing', '_blank')">カルシウムイメージング <i class="fa-solid fa-chevron-right"></i></div></li>
+                    <li><div class="menu-btn" onclick="showPage('p-coming-soon')">レーザー照射 <i class="fa-solid fa-chevron-right"></i></div></li>
+                    <li><div class="menu-btn" onclick="showPage('p-coming-soon')">細胞染色 <i class="fa-solid fa-chevron-right"></i></div></li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 片付けメニュー -->
+        <div id="p-exp-cleanup" class="page">
+            <button class="back-btn" onclick="showPage('p-home')"><i class="fa-solid fa-arrow-left"></i> TOPへ戻る</button>
+            <div class="section-card color-orange">
+                <div class="cat-title">片付け・実験終了</div>
+                <ul class="menu-list">
+                    <li><div class="menu-btn" onclick="showPage('p-trypsin-mea')">MEA洗浄 (トリプシン) <i class="fa-solid fa-chevron-right"></i></div></li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 準備中ページ -->
         <div id="p-coming-soon" class="page">
             <button class="back-btn" onclick="showPage('p-home')"><i class="fa-solid fa-arrow-left"></i> TOPへ戻る</button>
             <div class="section-card">
@@ -160,6 +214,7 @@
 
     </div>
 
+    <!-- モーダル（ガイド表示用） -->
     <div id="guide-modal" class="modal-overlay">
         <div class="modal-box">
             <div id="modal-title" class="modal-title">使い方の説明</div>
@@ -171,6 +226,7 @@
         </div>
     </div>
 
+    <!-- JSファイル読み込み -->
     <script src="manual_data.js"></script>
     <script src="script.js"></script>
 
