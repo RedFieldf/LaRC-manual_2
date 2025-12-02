@@ -87,7 +87,7 @@
                 <div class="cat-title">A. 試薬・物品管理</div>
                 <div class="icon-grid">
                     <div class="icon-btn-simple" onclick="showPage('p-order')">
-                        <i class="fa-solid fa-cart-shopping"></i><span>発注・受取</span>
+                        <i class="fa-solid fa-cart-shopping"></i><span>発注 / 受取</span>
                     </div>
                     <div class="icon-btn-simple" onclick="showPage('p-reagent-list')">
                         <i class="fa-solid fa-flask"></i><span>調製</span>
@@ -100,7 +100,7 @@
                 <div class="cat-title">B. 実験フロー</div>
                 <div class="icon-grid">
                     <div class="icon-btn-simple" onclick="showPage('p-exp-seeding')">
-                        <i class="fa-solid fa-seedling"></i><span>解剖・単離</span>
+                        <i class="fa-solid fa-seedling"></i><span>播種</span>
                     </div>
                     <div class="icon-btn-simple" onclick="showPage('p-exp-measure')">
                         <i class="fa-solid fa-chart-line"></i><span>培養・計測</span>
@@ -232,7 +232,8 @@
                 <ul class="menu-list">
                     <li><div class="menu-btn" onclick="showPage('p-mea-measurement')">MEA計測 <i class="fa-solid fa-chevron-right"></i></div></li>
                     <li><div class="menu-btn" onclick="window.open('https://drive.google.com/file/d/1ldC2vfBFAZ_5h8NMRc_v0tRhNLkJdlMJ/view?usp=sharing', '_blank')">カルシウムイメージング <i class="fa-solid fa-chevron-right"></i></div></li>
-                    <li><div class="menu-btn" onclick="showPage('p-coming-soon')">レーザー照射 <i class="fa-solid fa-chevron-right"></i></div></li>
+                    <!-- ★ここを修正：coming-soon から p-laser-irradiation へ -->
+                    <li><div class="menu-btn" onclick="showPage('p-laser-irradiation')">レーザー照射 <i class="fa-solid fa-chevron-right"></i></div></li>
                     <li><div class="menu-btn" onclick="showPage('p-coming-soon')">細胞染色 <i class="fa-solid fa-chevron-right"></i></div></li>
                 </ul>
             </div>
@@ -269,7 +270,7 @@
 
     </div>
 
-    <!-- ガイド用モーダル -->
+    <!-- モーダル -->
     <div id="guide-modal" class="modal-overlay">
         <div class="modal-box">
             <div id="modal-title" class="modal-title">使い方の説明</div>
@@ -288,14 +289,12 @@
                 <i class="fa-solid fa-triangle-exclamation"></i> 予約ルール確認
             </div>
             <div class="warning-text-box">
-                <span class="warning-point">先着順ではない！</span>
-                希望日程が被った場合、譲り合うこと。<br>
-                （予約は毎月25日開始）<br><br>
+                <span class="warning-point">先着順ではない！！</span>
+                同じ時間帯に複数希望者がいる場合は譲り合って使用すること！！<br>
+                （予約は毎月25日開始！）<br><br>
                 <span class="warning-point">10分ルール</span>
-                開始10分を過ぎても予約者が来ない場合、<br>
-                予約していない人が使ってOK！<br>
-                （ただし、基本は予約者優先とするので<br>
-                　上手くやってね。）
+                開始時刻10分を過ぎても、予約者からの連絡がない場合は、予約していない人が使ってもOK！<br>
+                （その後予約者が来たら、予約者優先とする）
             </div>
             <div class="modal-actions">
                 <button class="btn-cancel" onclick="closeReservationWarning()">戻る</button>
@@ -349,5 +348,3 @@
 
 </body>
 </html>
-
-
