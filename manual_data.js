@@ -73,10 +73,10 @@ const manuals = {
                     { title: "解凍する", sub: "プラカップに水道水を入れ、取り出した2つの溶液をつけておく。" },
                     { 
                         title: "P/S（抗生物質）を 5 ml 加える", 
-                        sub: "DMEMの瓶を開け、P/Sを入れる。入れたら瓶のフタを閉め、<strong>転倒攪拌</strong>する。",
-                        innerNote: { title: "なぜP/Sが先？", text: "DMEMは養分の塊です。FBSを入れる前に抗生物質(P/S)を先に入れることで、万が一のバクテリア混入リスクを下げます。" }
+                        sub: "DMEMの瓶を開け、P/Sを入れる。<br>入れたら瓶のフタを閉め、<strong>転倒攪拌</strong>する。",
+                        innerNote: { title: "なぜP/Sが先？", text: "DMEMは養分の塊。<br>FBSを入れる前に抗生物質(P/S)を先に入れることで、万が一のバクテリア混入リスクを下げる。" }
                     },
-                    { title: "FBS を加える", sub: "粘性があるので、ピペッティングをして全量をしっかり入れる。再度<strong>転倒攪拌</strong>する。" },
+                    { title: "FBS を加える", sub: "粘性があるので、ピペッティングをして全量をしっかり入れる。<br>再度<strong>転倒攪拌</strong>する。" },
                     { title: "ラベルを貼って終了", sub: "" }
                 ]
             }
@@ -124,7 +124,7 @@ const manuals = {
                     { title: "MilliQの準備", sub: "MilliQ 400 ml をメスシリンダーで測り取り、ビーカーに移す。" },
                     { title: "試薬の溶解", sub: "スターラーで撹拌しながら、試薬を順次加えて完全に溶かす。" },
                     { title: "メスアップ (500 ml)", sub: "メスシリンダーに戻し、MilliQを加えて全量を 500 ml に合わせる。" },
-                    { title: "滅菌・保存", sub: "オートクレーブ (121 ℃、20 min)。<span style=\"color:#e67e22; font-weight:bold;\">常温保存</span>。" }
+                    { title: "滅菌・保存", sub: "オートクレーブ (121 ℃、20 min)。<br> <span style=\"color:#e67e22; font-weight:bold;\">常温保存</span>。" }
                 ]
             },
             { type: 'sub-title', text: '② 1x PBS (-) 使用液の作製 (500 ml)' },
@@ -144,13 +144,13 @@ const manuals = {
     "p-fbs-inactivation": {
         title: "FBS 非働化 (Heat Inactivation)",
         content: [
-            { type: 'note', title: '目的', text: '血清中の補体を不活性化するため、56 ℃ で 30 min 間、加熱処理を行う。' },
+            { type: 'note', title: '目的', text: '血清中の補体を不活性化するため。' },
             { type: 'sub-title', text: '準備' },
             {
                 type: 'step',
                 list: [
                     { title: "FBSを解凍する（3日前）", sub: "冷蔵庫で<strong>3日間以上</strong>かけて溶かす。" },
-                    { title: "コントロール用ボトルの準備", sub: "乾燥棚下にある培地空ボトルに、FBSと同じ分だけ水道水を入れる。<br>冷蔵庫で<strong>1日以上</strong>かけて冷やす。" }
+                    { title: "コントロール用ボトルの準備", sub: "乾燥棚下にある、培地が入っていた空ボトルを1本とる。<br>FBSと同じ分だけ水道水を入れる。<br>冷蔵庫で<strong>1日以上</strong>かけて冷やす。" }
                 ]
             },
             { type: 'sub-title', text: '非働化処理 当日' },
@@ -158,12 +158,8 @@ const manuals = {
                 type: 'step',
                 list: [
                     { title: "ウォーターバスを 56 ℃ に設定", sub: "" },
-                    { title: "ボトルを温める", sub: "FBSボトルと、コントロール用ボトルを同じタイミングでウォーターバスに入れる。<br>このとき、コントロール用ボトルは蓋を開け、温度計を差し込んでおく。<br>温度計が56℃になるまで、5分おきに転倒攪拌しながら、温め続ける。" },
-                    { 
-                        title: "非働化処理 (56 ℃, 30 min)", 
-                        sub: "",
-                        innerWarning: { title: "重要：5 min おきに撹拌する！", text: "56℃になったら、そこから 30 min 間、同様の処理を続ける。" }
-                    },
+                    { title: "ボトルを温める", sub: "温度計を挿したコントロール用ボトルと、FBSボトルを同じタイミングでウォーターバスに入れる。<br>温度計が56℃になるまで、<strong>5分おきに転倒攪拌しながら、</strong>温め続ける。" },
+                    { title: "非働化処理 (56 ℃, 30 min)", sub: "56℃になったら、そこから 30 min 間、同様の処理を続ける。"},
                     { title: "冷却とろ過", sub: "氷水で常温になるまで冷却し、<strong>滅菌フィルター</strong>に通す。" },
                     { title: "分注・保存", sub: "50 ml ずつ分注し、冷凍庫で保存する。" }
                 ]
@@ -258,15 +254,14 @@ const manuals = {
             {
                 type: 'step',
                 list: [
-                    { title: "MEA dishの受取", sub: "金子先生に「新しくMEA dishを頂きたい」と伝えて受け取る。<strong><br>予算の都合上、勝手にとるのは厳禁です。</strong>" },
-                    { title: "破損具合の確認", sub: "顕微鏡で基板上の状態を確認する。<strong><br>この時点で不良品だった場合は無償で交換可能。</strong>" },
+                    { title: "MEA dishの受取", sub: "金子先生から新しいMEA dishを受け取る。<strong><br>予算の都合上、勝手にとるのは厳禁です。</strong>" },
+                    { title: "破損具合の確認", sub: "顕微鏡で基板上の状態を確認する。<strong><br>この時点で不良品だった場合は無償で交換できます。</strong>" },
                     { title: "Lot番号の記録", sub: "実験ノートにLot番号を控える。" },
-                    { title: "火炎滅菌", sub: "電極板を 2,3 sec ほど炙る。<br>※ピンセットで四つ角を強く掴んで行う。" },
-                    { title: "MilliQを入れる（任意）", sub: "滅菌水 2 ml を入れる。" },
+                    { title: "火炎滅菌（任意）", sub: "電極板を 2,3 sec ほど炙る。<br>※ピンセットで四つ角を強く掴んで行う。" },
                     { 
-                        title: "10 min 脱気（任意）", 
-                        sub: "デシケーターで 10 min 脱気する。",
-                        innerNote: { title: "目的", text: "白金黒の下から空気を除き、破損を防ぐため。<br>（空気が残っていると、膨張して電極が飛んでしまうことがある）" }
+                        title: "脱気処理（任意）", 
+                        sub: "滅菌水 2 ml を入れ、デシケーターで 10 min 脱気する。",
+                        innerNote: { title: "目的", text: "白金黒の下から空気を除き、破損を防ぐため。<br>（空気が残っていると、膨張して電極が飛んでしまうことがある。）" }
                     }
                 ]
             },
@@ -346,9 +341,9 @@ const manuals = {
                 type: 'step',
                 list: [
                     { title: "電源ON", sub: "ポンプと装置のスイッチをつける。" },
-                    { title: "サンプルセット・真空引き", sub: "サンプルを中に入れる。<br><br>VACUUM VALVEをOpen（赤）、PURGE VALVEをClose（青）にして真空引きを開始し、PRESSURE GAUGEが100近くまで下がるのを確認する。" },
-                    { title: "プラズマ照射", sub: "1. GASをONにする（Flow meter が 100 程度になることを確認）。<br><br>2. PLASMAをONにする（紫色の光）。<br><br>3. <strong>20 sec</strong>（任意）照射する。" },
-                    { title: "終了・取り出し", sub: "PLASMA→GASの順にOFF。<br>VACUUMをCloseにし、PURGEを<strong>ゆっくり</strong>Openにして大気圧に戻す。<br><br>サンプルを取り出し、ポンプと装置の電源をOFFにする。" }
+                    { title: "サンプルセット・真空引き", sub: "1. サンプルを中に入れる。<br>2. VACUUM VALVEをOpen（赤）、PURGE VALVEをClose（青）にして真空引きを開始。<br>3. PRESSURE GAUGEが100近くまで下がるのを確認。" },
+                    { title: "プラズマ照射", sub: "1. GASをONにして、Flow meterが 100 程度になることを確認。<br>2. PLASMAをON。<br>3. <strong>20 sec</strong>（任意）照射。" },
+                    { title: "終了・取り出し", sub: "1. PLASMA→GASの順にOFF。<br>2. VACUUMをCloseにし、PURGEを<strong>ゆっくり</strong>Openにして気圧を戻す。<br>3. サンプルを取り出し、ポンプと装置の電源を切る。" }
                 ]
             }
         ]
@@ -631,4 +626,5 @@ const manuals = {
             }
         ]
     }
+
 };
