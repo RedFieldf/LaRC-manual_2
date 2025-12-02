@@ -5,23 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MEA予約システム</title>
     
-    <!-- React & ReactDOM -->
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <!-- React & ReactDOM (安定版) -->
+    <script crossorigin src="https://unpkg.com/react@18.2.0/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
     
-    <!-- Babel (JSX変換用) -->
+    <!-- Babel -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- Firebase SDK -->
+    <!-- Firebase SDK (動作確認済みの安定版 v10.13.1 を指定) -->
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-        import { getFirestore, collection, addDoc, deleteDoc, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, deleteDoc, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore.js";
 
-        // ★★★ あなたのプロジェクトの設定情報 ★★★
         const firebaseConfig = {
             apiKey: "AIzaSyAU02VkWid0YqFxj2t7saBfmTH7oEYOshc",
             authDomain: "cell-manual.firebaseapp.com",
@@ -35,7 +34,6 @@
         window.__firebase_config = JSON.stringify(firebaseConfig);
         window.__app_id = "cell-manual-reservation";
 
-        // Reactから使えるように機能を公開
         window.firebaseModules = { initializeApp, getAuth, signInAnonymously, onAuthStateChanged, getFirestore, collection, addDoc, deleteDoc, doc, onSnapshot };
     </script>
 
@@ -45,7 +43,6 @@
         .slot-card:active { transform: scale(0.98); }
         .animate-fade-in { animation: fadeIn 0.3s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-        /* カスタムスクロールバー */
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 3px; }
@@ -57,21 +54,18 @@
     <script type="text/babel">
         const { useState, useEffect, useMemo } = React;
 
-        // ★★★ 管理者削除用パスワード設定（ハッシュ値） ★★★
+        // 管理者削除用パスワード（ハッシュ値）
         const ADMIN_HASH = "d1c8ef133fe0d499fd6b15a654585d02cf5096faad3a71cc4f60ade5fa3307d4";
 
-        // ハッシュ関数
         async function sha256(text) {
             const uint8 = new TextEncoder().encode(text);
             const digest = await crypto.subtle.digest('SHA-256', uint8);
             return Array.from(new Uint8Array(digest)).map(b => b.toString(16).padStart(2, '0')).join('');
         }
 
-        // 時間枠の設定 (8:00 - 23:00, 30分刻み, 最終22:30開始)
         const generateTimeSlots = () => {
             const slots = [];
             for (let h = 8; h <= 22; h++) {
-                const hour = h.toString();
                 const hourId = h.toString().padStart(2, '0');
                 const nextHour = h + 1;
                 slots.push({ id: `${hourId}:00`, label: `${h}:00-${h}:30` });
@@ -86,7 +80,7 @@
             { id: 'laser-minus', name: 'レーザー無 MEA', color: 'indigo' }
         ];
 
-        // --- アイコン ---
+        // アイコン
         const IconCalendar = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>;
         const IconUser = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>;
         const IconTrash = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>;
@@ -99,60 +93,40 @@
         const IconInfo = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>;
         const IconWifiOff = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="1" y1="1" x2="23" y2="23"></line><path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55"></path><path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39"></path><path d="M10.71 5.05A16 16 0 0 1 22.58 9"></path><path d="M1.42 9a15.91 15.91 0 0 1 4.7-2.88"></path><path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path><line x1="12" y1="20" x2="12.01" y2="20"></line></svg>;
 
-        // --- 予約可否判定ロジック (25日ルール) ---
         const isBookingAllowed = (targetDate) => {
             const now = new Date();
             const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
             const target = new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate());
-
             if (target < today) return { allowed: false, reason: "過去の日付です" };
-
             const currentYear = today.getFullYear();
             const currentMonth = today.getMonth();
             const targetYear = target.getFullYear();
             const targetMonth = target.getMonth();
-
             let nextMonthYear = currentYear;
             let nextMonth = currentMonth + 1;
-            if (nextMonth > 11) {
-                nextMonth = 0;
-                nextMonthYear++;
-            }
-
-            if (targetYear === currentYear && targetMonth === currentMonth) {
-                return { allowed: true };
-            }
-
+            if (nextMonth > 11) { nextMonth = 0; nextMonthYear++; }
+            if (targetYear === currentYear && targetMonth === currentMonth) return { allowed: true };
             if (targetYear === nextMonthYear && targetMonth === nextMonth) {
-                if (today.getDate() >= 25) {
-                    return { allowed: true };
-                } else {
-                    return { allowed: false, reason: "翌月の予約は25日から可能です" };
-                }
+                if (today.getDate() >= 25) return { allowed: true };
+                else return { allowed: false, reason: "翌月の予約は25日から可能です" };
             }
-
             return { allowed: false, reason: "予約期間外です" };
         };
 
-        // --- カレンダーコンポーネント ---
         function CalendarView({ selectedDate, onChangeDate, onSelectDate, reservations }) {
             const year = selectedDate.getFullYear();
             const month = selectedDate.getMonth();
             const firstDay = new Date(year, month, 1);
             const lastDay = new Date(year, month + 1, 0);
-            
             const days = [];
             for (let i = 0; i < firstDay.getDay(); i++) days.push(null);
             for (let d = 1; d <= lastDay.getDate(); d++) days.push(new Date(year, month, d));
-
             const changeMonth = (diff) => {
                 const newDate = new Date(selectedDate);
                 newDate.setMonth(newDate.getMonth() + diff);
                 onChangeDate(newDate);
             };
-
             const monthNames = ["1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月"];
-
             return (
                 <div className="flex flex-col h-full bg-white">
                     <div className="flex justify-between items-center p-4 bg-gray-50 border-b">
@@ -172,35 +146,15 @@
                     <div className="grid grid-cols-7 flex-1 auto-rows-fr p-2 gap-1 bg-gray-100 overflow-y-auto">
                         {days.map((date, i) => {
                             if (!date) return <div key={i} className="bg-transparent"></div>;
-                            
                             const dateStr = date.toISOString().split('T')[0];
                             const count = reservations.filter(r => r.date === dateStr).length;
                             const isToday = new Date().toDateString() === date.toDateString();
                             const { allowed } = isBookingAllowed(date);
-
                             return (
-                                <button
-                                    key={i}
-                                    onClick={() => onSelectDate(date)}
-                                    className={`relative flex flex-col items-center justify-start pt-2 rounded-lg transition border shadow-sm h-20 sm:h-24
-                                        ${isToday ? 'bg-blue-50 border-blue-400 ring-2 ring-blue-200' : 'bg-white border-gray-200 hover:bg-gray-50'}
-                                    `}
-                                >
-                                    <span className={`text-sm font-bold ${
-                                        date.getDay() === 0 ? 'text-red-500' : date.getDay() === 6 ? 'text-blue-500' : 'text-gray-700'
-                                    }`}>
-                                        {date.getDate()}
-                                    </span>
-                                    {count > 0 && (
-                                        <span className="mt-1 px-2 py-0.5 bg-teal-100 text-teal-700 text-[10px] font-bold rounded-full">
-                                            {count}件
-                                        </span>
-                                    )}
-                                    {!allowed && (
-                                        <span className="absolute bottom-1 right-1 text-gray-300">
-                                            <IconLock />
-                                        </span>
-                                    )}
+                                <button key={i} onClick={() => onSelectDate(date)} className={`relative flex flex-col items-center justify-start pt-2 rounded-lg transition border shadow-sm h-20 sm:h-24 ${isToday ? 'bg-blue-50 border-blue-400 ring-2 ring-blue-200' : 'bg-white border-gray-200 hover:bg-gray-50'}`}>
+                                    <span className={`text-sm font-bold ${date.getDay() === 0 ? 'text-red-500' : date.getDay() === 6 ? 'text-blue-500' : 'text-gray-700'}`}>{date.getDate()}</span>
+                                    {count > 0 && <span className="mt-1 px-2 py-0.5 bg-teal-100 text-teal-700 text-[10px] font-bold rounded-full">{count}件</span>}
+                                    {!allowed && <span className="absolute bottom-1 right-1 text-gray-300"><IconLock /></span>}
                                 </button>
                             );
                         })}
@@ -209,12 +163,10 @@
             );
         }
 
-        // --- App Component ---
         function App() {
             const [user, setUser] = useState(null);
             const [db, setDb] = useState(null);
             const [appId, setAppId] = useState(null);
-            
             const [viewMode, setViewMode] = useState('calendar');
             const [selectedDate, setSelectedDate] = useState(new Date());
             const [selectedResource, setSelectedResource] = useState(RESOURCES[0].id);
@@ -234,53 +186,35 @@
             const [inputPurpose, setInputPurpose] = useState("mea"); 
             const [inputWavelength, setInputWavelength] = useState("1480"); 
 
-            // 1. Firebase 初期化 & ログイン
             useEffect(() => {
                 const initFirebase = async () => {
-                    if (!window.firebaseModules) {
-                        setSdkError(true);
-                        setLoading(false);
-                        return;
-                    }
+                    if (!window.firebaseModules) { setSdkError(true); setLoading(false); return; }
                     const { initializeApp, getAuth, signInAnonymously, onAuthStateChanged, getFirestore } = window.firebaseModules;
                     const firebaseConfig = JSON.parse(window.__firebase_config || '{}');
                     const app = initializeApp(firebaseConfig);
                     const auth = getAuth(app);
                     const firestore = getFirestore(app);
                     const currentAppId = typeof window.__app_id !== 'undefined' ? window.__app_id : 'default-app-id';
-
                     setDb(firestore);
                     setAppId(currentAppId);
-
-                    try { 
-                        await signInAnonymously(auth); 
-                    } catch (e) { 
+                    try { await signInAnonymously(auth); } catch (e) { 
                         console.error("Auth Error:", e);
                         setAuthError(e);
                         setLoading(false);
                         return;
                     }
-
                     onAuthStateChanged(auth, (u) => {
                         setUser(u);
                         const savedName = localStorage.getItem('my_name');
                         if (savedName) setInputName(savedName);
                     });
                 };
-
                 let retries = 0;
                 const checkFirebase = setInterval(() => {
-                    if (window.firebaseModules) {
-                        clearInterval(checkFirebase);
-                        initFirebase();
-                    } else if (retries > 30) {
-                        clearInterval(checkFirebase);
-                        setSdkError(true);
-                        setLoading(false);
-                    }
+                    if (window.firebaseModules) { clearInterval(checkFirebase); initFirebase(); }
+                    else if (retries > 30) { clearInterval(checkFirebase); setSdkError(true); setLoading(false); }
                     retries++;
                 }, 100);
-
                 return () => clearInterval(checkFirebase);
             }, []);
 
@@ -288,24 +222,18 @@
                 if (!db || !user || !appId) return;
                 const { collection, onSnapshot } = window.firebaseModules;
                 const reservationsRef = collection(db, 'artifacts', appId, 'public', 'data', 'mea_reservations');
-
                 setLoading(true);
                 const unsubscribe = onSnapshot(reservationsRef, (snapshot) => {
                     const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                     setAllReservations(data);
                     setLoading(false);
-                }, (error) => {
-                    console.error("Error:", error);
-                    setLoading(false);
-                });
+                }, (error) => { console.error("Error:", error); setLoading(false); });
                 return () => unsubscribe();
             }, [db, user, appId]);
 
             const currentReservations = useMemo(() => {
                 const dateStr = selectedDate.toISOString().split('T')[0];
-                return allReservations.filter(r => 
-                    r.date === dateStr && r.resourceId === selectedResource
-                );
+                return allReservations.filter(r => r.date === dateStr && r.resourceId === selectedResource);
             }, [allReservations, selectedDate, selectedResource]);
 
             const resourceReservations = useMemo(() => {
@@ -315,7 +243,6 @@
             const handleSlotClick = (slot) => {
                 const status = isBookingAllowed(selectedDate);
                 const existing = currentReservations.find(r => r.time === slot.id);
-                
                 if (existing) {
                     setDeleteTarget(existing);
                     setDeletePassword(""); 
@@ -323,10 +250,7 @@
                     setTargetSlot(slot); 
                     setIsDeleteModalOpen(true);
                 } else {
-                    if (!status.allowed) {
-                        alert(status.reason); 
-                        return;
-                    }
+                    if (!status.allowed) { alert(status.reason); return; }
                     setTargetSlot(slot);
                     setInputNote("");
                     setInputPurpose("mea");
@@ -336,14 +260,10 @@
             };
 
             const submitReservation = async () => {
-                if (!inputName.trim()) {
-                    alert("名前（苗字）を入力してください");
-                    return;
-                }
+                if (!inputName.trim()) { alert("名前（苗字）を入力してください"); return; }
                 localStorage.setItem('my_name', inputName);
                 const { collection, addDoc } = window.firebaseModules;
                 const dateStr = selectedDate.toISOString().split('T')[0];
-
                 const saveData = {
                     date: dateStr,
                     resourceId: selectedResource,
@@ -357,13 +277,10 @@
                     saveData.purpose = inputPurpose;
                     saveData.wavelength = inputWavelength;
                 }
-
                 try {
                     await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'mea_reservations'), saveData);
                     setIsModalOpen(false);
-                } catch (e) {
-                    alert("予約に失敗しました。");
-                }
+                } catch (e) { alert("予約に失敗しました。"); }
             };
 
             const executeDelete = async () => {
@@ -374,15 +291,12 @@
                         return;
                     }
                 }
-
                 const { doc, deleteDoc } = window.firebaseModules;
                 try {
                     const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'mea_reservations', deleteTarget.id);
                     await deleteDoc(docRef);
                     setIsDeleteModalOpen(false);
-                } catch (e) {
-                    alert("削除に失敗しました。");
-                }
+                } catch (e) { alert("削除に失敗しました。"); }
             };
 
             const dateDisplay = useMemo(() => {
@@ -396,10 +310,9 @@
 
             // ★★★ エラー画面：接続拒否 (Referer Blocked) 対応 ★★★
             if (authError) {
-                // エラーメッセージからブロックされたURLを抽出を試みる
                 const match = authError.message && authError.message.match(/requests-from-referer-(.*?)-are-blocked/);
                 let blockedUrl = match ? match[1] : window.location.href;
-                if (blockedUrl.endsWith('.')) blockedUrl = blockedUrl.slice(0, -1); // 末尾のドット削除
+                if (blockedUrl.endsWith('.')) blockedUrl = blockedUrl.slice(0, -1);
 
                 return (
                     <div className="min-h-screen bg-slate-800 flex items-center justify-center p-4">
