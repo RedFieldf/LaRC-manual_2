@@ -34,6 +34,24 @@
         }
         .auth-btn:hover { background: #219150; }
         #auth-error { color: #e74c3c; margin-top: 10px; font-size: 0.9rem; display: none; font-weight: bold; }
+
+        /* 予約警告モーダル用の追加スタイル */
+        .warning-text-box {
+            background: #fff5f5;
+            border: 2px solid #e74c3c;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+            text-align: left;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            color: #c0392b;
+        }
+        .warning-point {
+            font-weight: bold;
+            margin-bottom: 10px;
+            display: block;
+        }
     </style>
 </head>
 <body>
@@ -137,7 +155,8 @@
             <div class="section-card color-teal">
                 <div class="cat-title">F. 予約表</div>
                 <div class="icon-grid">
-                    <div class="icon-btn-simple" onclick="window.location.href='reservation_app.html'">
+                    <!-- ★ここを変更：直接リンクではなく、警告表示関数を呼ぶ -->
+                    <div class="icon-btn-simple" onclick="openReservationWarning()">
                         <i class="fa-solid fa-calendar-days"></i><span>予約システム<br>を開く</span>
                     </div>
                 </div>
@@ -250,7 +269,7 @@
 
     </div>
 
-    <!-- モーダル -->
+    <!-- ガイド用モーダル -->
     <div id="guide-modal" class="modal-overlay">
         <div class="modal-box">
             <div id="modal-title" class="modal-title">使い方の説明</div>
@@ -262,14 +281,33 @@
         </div>
     </div>
 
-    <!-- ★★★ ファイル分割なしバージョンに戻す ★★★ -->
-    <!-- 元の manual_data.js を読み込む -->
+    <!-- ★★★ 予約システム注意書き用モーダル（新規追加） ★★★ -->
+    <div id="reservation-warning-modal" class="modal-overlay">
+        <div class="modal-box" style="width: 450px; max-width: 95%;">
+            <div class="modal-title" style="color: #c0392b; border-bottom: 2px solid #c0392b; padding-bottom: 10px;">
+                <i class="fa-solid fa-triangle-exclamation"></i> 予約ルール確認
+            </div>
+            <div class="warning-text-box">
+                <span class="warning-point">先着順ではない！</span>
+                同じ時間帯に複数希望者がいる場合は譲り合って使用すること！<br>
+                （予約は毎月25日開始！）<br><br>
+                <span class="warning-point">10分ルール</span>
+                開始時刻10分を過ぎても、予約者からの連絡がない場合は、予約していない人が使ってOKです！<br>
+                （ただし、基本は予約者優先とするので譲り合ってください。）
+            </div>
+            <div class="modal-actions">
+                <button class="btn-cancel" onclick="closeReservationWarning()">戻る</button>
+                <button class="btn-go" onclick="window.location.href='reservation_app.html'">同意してシステムを開く</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ファイル分割なしバージョン -->
     <script src="manual_data.js?v=2"></script>
     <script src="script.js?v=2"></script>
 
-    <!-- ★★★ 認証ロジック (ハッシュ化対応・localStorage使用) ★★★ -->
+    <!-- ★★★ 認証ロジック & 予約警告ロジック ★★★ -->
     <script>
-        // 【重要】ここに作成したハッシュ値を貼り付けてください
         const SITE_HASH = "d1c8ef133fe0d499fd6b15a654585d02cf5096faad3a71cc4f60ade5fa3307d4"; 
 
         async function sha256(text) {
@@ -281,12 +319,9 @@
         async function checkAuth() {
             const input = document.getElementById('auth-pass').value;
             const errorMsg = document.getElementById('auth-error');
-            
-            // 入力されたパスワードをハッシュ化して比較
             const inputHash = await sha256(input);
 
             if (inputHash === SITE_HASH) {
-                // LocalStorageに保存（ブラウザを閉じても次回は自動ログイン）
                 localStorage.setItem('site_auth_token', inputHash);
                 document.getElementById('auth-overlay').style.display = 'none';
             } else {
@@ -294,17 +329,21 @@
             }
         }
 
-        // ページ読み込み時のチェック
         window.addEventListener('DOMContentLoaded', () => {
             const token = localStorage.getItem('site_auth_token');
-            // 保存されたトークンが正しければ画面を表示（パスワード入力画面を消す）
             if (token === SITE_HASH) {
                 document.getElementById('auth-overlay').style.display = 'none';
             }
         });
+
+        // 予約警告モーダルの制御
+        function openReservationWarning() {
+            document.getElementById('reservation-warning-modal').classList.add('active');
+        }
+        function closeReservationWarning() {
+            document.getElementById('reservation-warning-modal').classList.remove('active');
+        }
     </script>
 
 </body>
 </html>
-
-
