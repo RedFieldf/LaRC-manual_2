@@ -96,8 +96,10 @@
             <div class="section-card color-teal">
                 <div class="cat-title">F. 予約表</div>
                 <div class="icon-grid">
-                    <div class="icon-btn-simple" onclick="openGuide('laser-plus')"><i class="fa-solid fa-calendar-check"></i><span>レーザー有 MEA</span></div>
-                    <div class="icon-btn-simple" onclick="openGuide('laser-minus')"><i class="fa-regular fa-calendar"></i><span>レーザー無 MEA</span></div>
+                    <!-- ★ここを変更しました：予約アプリへ移動するボタン -->
+                    <div class="icon-btn-simple" onclick="window.location.href='reservation_app.html'">
+                        <i class="fa-solid fa-calendar-days"></i><span>予約システム<br>を開く</span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -163,7 +165,7 @@
             </div>
         </div>
 
-        <!-- ★ここが今回追加された部分：AMC加工メニュー -->
+        <!-- ★ここが重要：AMC加工メニュー（ユーザー様のコードには抜けていた部分です） -->
         <div id="p-amc-menu" class="page">
             <button class="back-btn" onclick="showPage('p-exp-seeding')"><i class="fa-solid fa-arrow-left"></i> 播種メニューへ戻る</button>
             <div class="section-card color-orange">
@@ -206,9 +208,7 @@
              <div class="section-card color-purple">
                  <div class="cat-title">TA向け資料</div>
                  <ul class="menu-list">
-                     <!-- 基礎実験準備ページへ飛ぶボタン -->
                      <li><div class="menu-btn" onclick="showPage('p-basic-exp-prep')">基礎実験準備 <i class="fa-solid fa-chevron-right"></i></div></li>
-                     <!-- 学祭準備（Google Drive）へ飛ぶボタン -->
                      <li><div class="menu-btn" onclick="window.open('https://drive.google.com/drive/folders/1sb8EctMdssIDfWBfbviTxowtvzaLmIv9?usp=sharing', '_blank')">学祭準備 <i class="fa-solid fa-chevron-right"></i></div></li>
                  </ul>
              </div>
@@ -246,4 +246,3 @@
 
 </body>
 </html>
-
