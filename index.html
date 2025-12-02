@@ -5,9 +5,52 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>細胞班マニュアル</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- キャッシュ対策：?v=2 を追加 -->
     <link rel="stylesheet" href="style.css?v=2">
+    <style>
+        /* 認証画面用のスタイル（ここに追加） */
+        #auth-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #2c3e50; z-index: 99999;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            color: white;
+        }
+        .auth-box {
+            background: white; padding: 30px; border-radius: 12px;
+            color: #333; text-align: center; max-width: 90%; width: 350px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+        }
+        .auth-input {
+            width: 100%; padding: 12px; margin-bottom: 15px;
+            border: 2px solid #ddd; border-radius: 6px; box-sizing: border-box;
+            font-size: 1rem; outline: none;
+        }
+        .auth-input:focus { border-color: #27ae60; }
+        .auth-btn {
+            width: 100%; padding: 12px; background: #27ae60;
+            color: white; border: none; border-radius: 6px;
+            font-weight: bold; cursor: pointer; font-size: 1rem;
+            transition: 0.2s;
+        }
+        .auth-btn:hover { background: #219150; }
+        #auth-error { color: #e74c3c; margin-top: 10px; font-size: 0.9rem; display: none; font-weight: bold; }
+    </style>
 </head>
 <body>
+
+    <!-- ★★★ 認証オーバーレイ（最初はこれで画面を隠す） ★★★ -->
+    <div id="auth-overlay">
+        <div class="auth-box">
+            <h2 style="margin-top:0; margin-bottom:5px; color:#2c3e50; font-size: 1.5rem;">細胞班マニュアル</h2>
+            <p style="font-size:0.85rem; color:#7f8c8d; margin-bottom:20px;">Internal Use Only</p>
+            
+            <p style="font-size:0.9rem; color:#666; margin-bottom:10px; text-align:left; font-weight:bold;">パスワード</p>
+            <input type="password" id="auth-pass" class="auth-input" placeholder="Password" onkeydown="if(event.key==='Enter') checkAuth()">
+            
+            <button onclick="checkAuth()" class="auth-btn">ログイン</button>
+            <p id="auth-error"><i class="fa-solid fa-circle-exclamation"></i> パスワードが違います</p>
+        </div>
+    </div>
 
     <div class="security-bar">
         <i class="fa-solid fa-lock"></i> 【 外部流出禁止 】 (Internal Use Only)
@@ -245,6 +288,34 @@
     <script src="manual_data.js?v=2"></script>
     <script src="script.js?v=2"></script>
 
+    <!-- ★★★ 認証ロジック ★★★ -->
+    <script>
+        // パスワード設定（予約アプリと同じ "cell" に設定）
+        const SITE_PASSWORD = "cell"; 
+
+        function checkAuth() {
+            const input = document.getElementById('auth-pass').value;
+            const errorMsg = document.getElementById('auth-error');
+            
+            // パスワードチェック
+            if (input === SITE_PASSWORD) {
+                // セッションストレージに記録（ブラウザを閉じるまで有効）
+                sessionStorage.setItem('site_auth', 'true');
+                // 画面を隠しているオーバーレイを消す
+                document.getElementById('auth-overlay').style.display = 'none';
+            } else {
+                errorMsg.style.display = 'block';
+            }
+        }
+
+        // ページ読み込み時のチェック
+        window.addEventListener('DOMContentLoaded', () => {
+            // 既にログイン済みなら画面を表示
+            if (sessionStorage.getItem('site_auth') === 'true') {
+                document.getElementById('auth-overlay').style.display = 'none';
+            }
+        });
+    </script>
+
 </body>
 </html>
-
