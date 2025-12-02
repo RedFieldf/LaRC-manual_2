@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MEA予約システム</title>
+    
+    <!-- React & ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel (JSX変換用) -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Icons (Lucide) -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, deleteDoc, doc, query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        window.firebaseModules = { initializeApp, getAuth, signInAnonymously, onAuthStateChanged, getFirestore, collection, addDoc, deleteDoc, doc, query, where, onSnapshot };
+    </script>
+
+    <style>
+        body { background-color: #f3f4f6; font-family: "Helvetica Neue", Arial, sans-serif; -webkit-tap-highlight-color: transparent; }
+        .slot-card { transition: all 0.2s; }
+        .slot-card:active { transform: scale(0.98); }
+        .animate-fade-in { animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useMemo } = React;
+
+        // 時間枠の設定 (9:00 - 21:00)
+        const TIME_SLOTS = [
+            "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", 
+            "15:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:00"
+        ];
+
+        // 機器リスト
+        const RESOURCES = [
+            { id: 'laser-plus', name: 'レーザー有 MEA', color: 'teal' },
+            { id: 'laser-minus', name: 'レーザー無 MEA', color: 'indigo' }
+        ];
+
+        // --- App Component ---
+        function App() {
+            const [user, setUser] = useState(null);
+            const [db, setDb] = useState(null);
+            const [appId, setAppId] = useState(null);
+            const [selectedDate, setSelectedDate] = useState(new Date());
+            const [selectedResource, setSelectedResource] = useState(RESOURCES[0].id);
+            const [reservations, setReservations] = useState([]);
+            const [inputName, setInputName] = useState("");
+            const [isModalOpen, setIsModalOpen] = useState(false);
+            const [targetSlot, setTargetSlot] = useState(null);
+            const [loading, setLoading] = useState(true);
+
+            // Firebase 初期化
+            useEffect(() => {
+                const initFirebase = async () => {
+                    const { initializeApp, getAuth, signInAnonymously, onAuthStateChanged, getFirestore } = window.firebaseModules;
+                    
+                    const firebaseConfig = JSON.parse(window.__firebase_config || '{}');
+                    const app = initializeApp(firebaseConfig);
+                    const auth = getAuth(app);
+                    const firestore = getFirestore(app);
+                    const currentAppId = typeof window.__app_id !== 'undefined' ? window.__app_id : 'default-app-id';
+
+                    setDb(firestore);
+                    setAppId(currentAppId);
+
+                    // 匿名ログイン (誰でも使えるように)
+                    await signInAnonymously(auth);
+                    onAuthStateChanged(auth, (u) => {
+                        setUser(u);
+                        // ローカルストレージから名前を復元
+                        const savedName = localStorage.getItem('my_name');
+                        if (savedName) setInputName(savedName);
+                    });
+                };
+                if (window.firebaseModules) initFirebase();
+            }, []);
+
+            // 予約データの監視 (日付と機器が変わるたびに再取得)
+            useEffect(() => {
+                if (!db || !user) return;
+                
+                const { collection, query, where, onSnapshot } = window.firebaseModules;
+                
+                // 日付を文字列 YYYY-MM-DD に変換
+                const dateStr = selectedDate.toISOString().split('T')[0];
+
+                // クエリ作成: その日の、その機器の予約だけを取ってくる
+                // RULE 2: 複合クエリを避けるため、日付とリソースでフィルタリングするが、単純化のため全件取得してJSでフィルタはデータ量的に非推奨。
+                // ここでは collection -> where date -> where resource でフィルタ。
+                // Firestoreのインデックスが必要になる可能性があるが、この規模ならOK。
+                // 安全のため、データ構造を工夫するアプローチもありますが、ここでは標準的に実装します。
+                
+                const q = query(
+                    collection(db, 'artifacts', appId, 'public', 'data', 'mea_reservations'),
+                    where('date', '==', dateStr),
+                    where('resourceId', '==', selectedResource)
+                );
+
+                setLoading(true);
+                const unsubscribe = onSnapshot(q, (snapshot) => {
+                    const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    setReservations(data);
+                    setLoading(false);
+                }, (error) => {
+                    console.error("Error fetching data:", error);
+                    setLoading(false);
+                });
+
+                return () => unsubscribe();
+            }, [db, user, selectedDate, selectedResource]);
+
+            // 日付操作
+            const changeDate = (days) => {
+                const newDate = new Date(selectedDate);
+                newDate.setDate(newDate.getDate() + days);
+                setSelectedDate(newDate);
+            };
+
+            // 予約モーダルを開く
+            const handleSlotClick = (time) => {
+                // 既に予約があるかチェック
+                const existing = reservations.find(r => r.time === time);
+                
+                if (existing) {
+                    // 自分の予約なら削除確認
+                    if (existing.uid === user.uid) {
+                        if (confirm(`「${existing.time}」の予約を取り消しますか？`)) {
+                            deleteReservation(existing.id);
+                        }
+                    } else {
+                        alert(`この時間は ${existing.name} さんが予約済みです。`);
+                    }
+                } else {
+                    // 空きなら新規予約モーダルへ
+                    setTargetSlot(time);
+                    setIsModalOpen(true);
+                }
+            };
+
+            // 予約実行
+            const submitReservation = async () => {
+                if (!inputName.trim()) {
+                    alert("名前を入力してください");
+                    return;
+                }
+                
+                // 名前をローカルストレージに保存（次回入力を楽に）
+                localStorage.setItem('my_name', inputName);
+
+                const { collection, addDoc } = window.firebaseModules;
+                const dateStr = selectedDate.toISOString().split('T')[0];
+
+                try {
+                    await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'mea_reservations'), {
+                        date: dateStr,
+                        resourceId: selectedResource,
+                        time: targetSlot,
+                        name: inputName,
+                        uid: user.uid,
+                        createdAt: new Date().toISOString()
+                    });
+                    setIsModalOpen(false);
+                } catch (e) {
+                    console.error("Error adding reservation: ", e);
+                    alert("予約に失敗しました。");
+                }
+            };
+
+            // 予約削除
+            const deleteReservation = async (docId) => {
+                const { doc, deleteDoc } = window.firebaseModules;
+                try {
+                    await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'mea_reservations', docId));
+                } catch (e) {
+                    console.error("Error deleting reservation: ", e);
+                    alert("削除に失敗しました。");
+                }
+            };
+
+            // 今日の日付文字列表示
+            const dateDisplay = useMemo(() => {
+                const d = selectedDate;
+                const days = ['日', '月', '火', '水', '木', '金', '土'];
+                return `${d.getMonth() + 1}/${d.getDate()} (${days[d.getDay()]})`;
+            }, [selectedDate]);
+
+            // 現在のリソースカラー
+            const currentColor = RESOURCES.find(r => r.id === selectedResource).color;
+
+            // アイコンコンポーネント
+            const IconCalendar = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>;
+            const IconUser = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>;
+            const IconTrash = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>;
+            const IconArrowLeft = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>;
+            const IconArrowRight = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>;
+            const IconBack = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>;
+
+            return (
+                <div className="max-w-md mx-auto min-h-screen bg-white shadow-lg overflow-hidden flex flex-col">
+                    
+                    {/* ヘッダー */}
+                    <div className="bg-slate-800 text-white p-4 flex items-center shadow-md">
+                        <a href="index.html" className="mr-3 p-2 hover:bg-slate-700 rounded-full transition">
+                            <IconBack />
+                        </a>
+                        <h1 className="font-bold text-lg">MEA予約システム</h1>
+                    </div>
+
+                    {/* タブ切り替え */}
+                    <div className="flex border-b">
+                        {RESOURCES.map(res => (
+                            <button
+                                key={res.id}
+                                onClick={() => setSelectedResource(res.id)}
+                                className={`flex-1 py-4 text-center font-bold text-sm transition-colors ${
+                                    selectedResource === res.id 
+                                    ? `bg-${res.color}-50 text-${res.color}-600 border-b-4 border-${res.color}-500` 
+                                    : 'text-gray-500 hover:bg-gray-50'
+                                }`}
+                            >
+                                {res.name}
+                            </button>
+                        ))}
+                    </div>
+
+                    {/* 日付ナビゲーション */}
+                    <div className="flex justify-between items-center p-4 bg-gray-50 border-b sticky top-0 z-10">
+                        <button onClick={() => changeDate(-1)} className="p-2 rounded-full bg-white shadow text-gray-600 hover:bg-gray-100"><IconArrowLeft /></button>
+                        <div className="flex items-center gap-2 font-bold text-lg text-gray-700">
+                            <IconCalendar />
+                            <span>{dateDisplay}</span>
+                        </div>
+                        <button onClick={() => changeDate(1)} className="p-2 rounded-full bg-white shadow text-gray-600 hover:bg-gray-100"><IconArrowRight /></button>
+                    </div>
+
+                    {/* タイムスロット一覧 */}
+                    <div className="flex-1 p-4 overflow-y-auto">
+                        {loading ? (
+                            <div className="text-center py-10 text-gray-400">読み込み中...</div>
+                        ) : (
+                            <div className="space-y-3 pb-20">
+                                {TIME_SLOTS.map(time => {
+                                    const reservation = reservations.find(r => r.time === time);
+                                    const isMine = reservation && user && reservation.uid === user.uid;
+                                    const isOccupied = !!reservation;
+
+                                    return (
+                                        <div 
+                                            key={time}
+                                            onClick={() => handleSlotClick(time)}
+                                            className={`slot-card animate-fade-in flex items-center justify-between p-4 rounded-xl border-l-4 shadow-sm cursor-pointer select-none ${
+                                                isOccupied 
+                                                ? isMine 
+                                                    ? 'bg-blue-50 border-blue-500' // 自分の予約
+                                                    : 'bg-red-50 border-red-500'   // 他人の予約
+                                                : 'bg-white border-gray-300 hover:bg-gray-50' // 空き
+                                            }`}
+                                        >
+                                            <div className="font-bold text-lg text-gray-700 w-16">{time}</div>
+                                            
+                                            <div className="flex-1 px-4">
+                                                {isOccupied ? (
+                                                    <div className="flex items-center gap-2">
+                                                        <IconUser />
+                                                        <span className={`font-bold ${isMine ? 'text-blue-700' : 'text-red-700'}`}>
+                                                            {reservation.name}
+                                                        </span>
+                                                        {isMine && <span className="text-xs bg-blue-200 text-blue-800 px-2 py-0.5 rounded-full">あなた</span>}
+                                                    </div>
+                                                ) : (
+                                                    <span className="text-gray-400 text-sm">空き</span>
+                                                )}
+                                            </div>
+
+                                            <div>
+                                                {isOccupied ? (
+                                                    isMine && <button className="text-red-400 hover:text-red-600 p-2"><IconTrash /></button>
+                                                ) : (
+                                                    <span className="text-2xl text-gray-300 font-light">+</span>
+                                                )}
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        )}
+                    </div>
+
+                    {/* 予約モーダル */}
+                    {isModalOpen && (
+                        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 animate-fade-in">
+                            <div className="bg-white w-full max-w-sm rounded-2xl p-6 shadow-2xl">
+                                <h3 className="text-xl font-bold mb-2 text-gray-800">予約: {targetSlot}</h3>
+                                <p className="text-sm text-gray-500 mb-4">{dateDisplay} - {RESOURCES.find(r => r.id === selectedResource).name}</p>
+                                
+                                <label className="block text-sm font-bold text-gray-700 mb-2">お名前</label>
+                                <input 
+                                    type="text" 
+                                    value={inputName}
+                                    onChange={(e) => setInputName(e.target.value)}
+                                    placeholder="例: 佐藤"
+                                    className="w-full p-3 border rounded-lg mb-6 text-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+                                    autoFocus
+                                />
+                                
+                                <div className="flex gap-3">
+                                    <button 
+                                        onClick={() => setIsModalOpen(false)}
+                                        className="flex-1 py-3 bg-gray-200 text-gray-700 font-bold rounded-lg hover:bg-gray-300"
+                                    >
+                                        キャンセル
+                                    </button>
+                                    <button 
+                                        onClick={submitReservation}
+                                        className="flex-1 py-3 bg-teal-600 text-white font-bold rounded-lg hover:bg-teal-700"
+                                    >
+                                        予約する
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
+```
+
+### 導入手順（最後の仕上げ）
+
+このファイル（`reservation_app.html`）は単体で動くWebアプリです。
+あとは、**元のサイト（`index.html`）から、このアプリへ飛ぶためのリンク**を貼れば完了です。
+
+#### `index.html` を少しだけ書き換えます
+先ほどまで使っていた「F. 予約表」の部分を、以下のように変更してください。
+
+```html
+            <!-- (F) 予約 -->
+            <div class="section-card color-teal">
+                <div class="cat-title">F. 予約表</div>
+                <div class="icon-grid">
+                    <!-- showPage(...) ではなく window.location.href に変更して新ファイルへ移動 -->
+                    <div class="icon-btn-simple" onclick="window.location.href='reservation_app.html'">
+                        <i class="fa-solid fa-calendar-check"></i><span>予約システム<br>を開く</span>
+                    </div>
+                </div>
+            </div>
