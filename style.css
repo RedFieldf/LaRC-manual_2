@@ -1,0 +1,133 @@
+        /* --- デザイン設定 (CSS) --- */
+        body { font-family: "Helvetica Neue", Arial, sans-serif; background-color: #f0f2f5; margin: 0; padding: 0; color: #333; }
+        
+        /* 警告バー (新規追加) */
+        .security-bar {
+            background-color: #c0392b; /* 濃い赤色 */
+            color: white;
+            text-align: center;
+            padding: 8px;
+            font-weight: bold;
+            font-size: 0.95rem;
+            letter-spacing: 1px;
+        }
+
+        /* ヘッダー */
+        header { background: #2c3e50; color: white; padding: 15px; text-align: center; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        header h1 { margin: 0; font-size: 1.2rem; }
+        
+        /* 画面のコンテナ */
+        .container { max-width: 900px; margin: 20px auto; padding: 0 15px; }
+
+        /* ページ切り替えの仕組み */
+        .page { display: none; animation: fadeIn 0.3s; }
+        .page.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* カードとセクション */
+        .section-card { background: white; border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .cat-title { font-size: 1.1em; border-bottom: 2px solid #ddd; padding-bottom: 8px; margin-bottom: 15px; font-weight: bold; }
+
+        /* --- レシピ風詳細ページのデザイン --- */
+        .recipe-title { font-size: 1.4rem; color: #2c3e50; border-bottom: 3px solid #27ae60; padding-bottom: 10px; margin-bottom: 20px; font-weight: bold; }
+        .recipe-subtitle { font-size: 1.1rem; color: #555; border-left: 4px solid #27ae60; padding-left: 10px; margin-top: 30px; margin-bottom: 15px; font-weight: bold; }
+        
+        /* 手順リスト */
+        .step-list { counter-reset: step; list-style: none; padding: 0; }
+        .step-list > li { position: relative; padding-left: 40px; margin-bottom: 20px; }
+        .step-list > li::before {
+            content: counter(step); counter-increment: step;
+            position: absolute; left: 0; top: 0;
+            width: 30px; height: 30px; background: #27ae60; color: white;
+            border-radius: 50%; text-align: center; line-height: 30px; font-weight: bold;
+        }
+        .step-txt { font-weight: bold; display: block; margin-bottom: 5px; font-size: 1.05rem; }
+        .step-sub { font-size: 0.9rem; color: #666; line-height: 1.5; }
+
+        /* ポイント・注意枠 */
+        .note-box { background: #fff8e1; border-left: 5px solid #ffc107; padding: 15px; margin: 20px 0; border-radius: 4px; }
+        .note-title { font-weight: bold; color: #d35400; margin-bottom: 5px; display: block; }
+        .note-box ul { list-style-type: disc; padding-left: 20px; margin: 5px 0 0 0; }
+        .note-box ul li { list-style-type: disc; padding-left: 0; margin-bottom: 5px; }
+
+        /* 危険・警告枠 (赤) */
+        .warning-box { background: #fdedec; border-left: 5px solid #c0392b; padding: 15px; margin: 20px 0; border-radius: 4px; color: #c0392b; }
+        .warning-title { font-weight: bold; margin-bottom: 5px; display: block; font-size: 1.1em; }
+
+        /* テンプレート枠（コピー用） */
+        .template-box { background: #e8f0fe; border: 1px solid #b3d7ff; padding: 15px; border-radius: 5px; font-family: monospace; white-space: pre-wrap; margin: 10px 0; color: #333; }
+
+        /* 準備中画面 */
+        .coming-soon { text-align: center; padding: 50px 20px; color: #7f8c8d; }
+        .coming-soon i { font-size: 4rem; margin-bottom: 20px; color: #bdc3c7; }
+        
+        /* --- グリッド設定 --- */
+        .icon-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 15px; }
+
+        /* Type 1: シンプル */
+        .icon-btn-simple {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            padding: 15px 10px; border-radius: 10px; text-align: center; cursor: pointer; transition: 0.2s;
+            border: 2px solid transparent; min-height: 90px;
+        }
+        .icon-btn-simple i { font-size: 2rem; display: block; margin-bottom: 10px; }
+        .icon-btn-simple span { font-weight: bold; font-size: 0.9rem; line-height: 1.3; }
+        .icon-btn-simple:hover { transform: translateY(-3px); color: white !important; }
+
+        /* Type 2: 詳細 */
+        .icon-btn-detail {
+            display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+            padding: 15px 10px; border-radius: 10px; text-align: center; cursor: pointer; transition: 0.2s;
+            border: 2px solid transparent; min-height: 110px;
+        }
+        .icon-btn-detail i { font-size: 2rem; display: block; margin-bottom: 10px; margin-top: 5px; }
+        .icon-btn-detail .btn-title { font-weight: bold; font-size: 1rem; display: block; margin-bottom: 5px; line-height: 1.2; }
+        .icon-btn-detail .btn-desc { font-size: 0.75rem; color: #666; font-weight: normal; line-height: 1.3; display: block; }
+        .icon-btn-detail:hover { transform: translateY(-3px); }
+        .icon-btn-detail:hover .btn-desc { color: rgba(255,255,255,0.9); }
+        .icon-btn-detail:hover i, .icon-btn-detail:hover .btn-title { color: white !important; }
+
+        /* Modal */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 999; justify-content: center; align-items: center; }
+        .modal-overlay.active { display: flex; animation: fadeIn 0.2s; }
+        .modal-box { background: white; padding: 30px; border-radius: 12px; max-width: 90%; width: 400px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); text-align: center; }
+        .modal-title { font-size: 1.2rem; font-weight: bold; color: #2c3e50; margin-bottom: 15px; }
+        .modal-text { font-size: 0.95rem; color: #555; margin-bottom: 25px; line-height: 1.6; text-align: left; background: #f9f9f9; padding: 15px; border-radius: 8px; }
+        .modal-actions { display: flex; gap: 10px; justify-content: center; }
+        .btn-cancel { background: #95a5a6; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; }
+        .btn-go { background: #16a085; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; text-decoration: none; }
+        .btn-go:hover { background: #1abc9c; }
+
+        /* Colors */
+        .color-green .cat-title { color: #27ae60; border-color: #27ae60; }
+        .color-green .icon-btn-simple { background: #eef9f0; border-color: #ccebd4; color: #27ae60; }
+        .color-green .icon-btn-simple:hover { background: #27ae60; border-color: #27ae60; }
+        
+        .color-orange .cat-title { color: #e67e22; border-color: #e67e22; }
+        .color-orange .icon-btn-simple { background: #fff8f0; border-color: #ffe0b2; color: #e67e22; }
+        .color-orange .icon-btn-simple:hover { background: #e67e22; border-color: #e67e22; }
+
+        .color-blue .cat-title { color: #2980b9; border-color: #2980b9; }
+        .color-blue .icon-btn-detail { background: #f0f7fb; border-color: #bce0f5; color: #2980b9; }
+        .color-blue .icon-btn-detail:hover { background: #2980b9; border-color: #2980b9; }
+
+        .color-red .cat-title { color: #c0392b; border-color: #c0392b; }
+        .color-red .icon-btn-simple { background: #fdedec; border-color: #fadbd8; color: #c0392b; }
+        .color-red .icon-btn-simple:hover { background: #c0392b; border-color: #c0392b; }
+
+        .color-purple .cat-title { color: #8e44ad; border-color: #8e44ad; }
+        .color-purple .icon-btn-simple { background: #f4ecf7; border-color: #d2b4de; color: #8e44ad; }
+        .color-purple .icon-btn-simple:hover { background: #8e44ad; border-color: #8e44ad; }
+
+        .color-teal .cat-title { color: #16a085; border-color: #16a085; }
+        .color-teal .icon-btn-simple { background: #e8f8f5; border-color: #a3e4d7; color: #16a085; }
+        .color-teal .icon-btn-simple:hover { background: #16a085; border-color: #16a085; }
+
+        /* Lists & Buttons */
+        .menu-list { list-style: none; padding: 0; }
+        .menu-list li { margin-bottom: 10px; }
+        .menu-btn { display: flex; justify-content: space-between; align-items: center; background: #f8f9fa; border: 1px solid #eee; padding: 15px; border-radius: 8px; cursor: pointer; text-decoration: none; color: #333; font-weight: bold; transition: 0.2s; }
+        .menu-btn:hover { background: #e9ecef; border-color: #ddd; padding-left: 20px; }
+        .menu-btn i { color: #ccc; }
+        .back-btn { display: inline-block; background: #95a5a6; color: white; padding: 8px 15px; border-radius: 20px; font-size: 0.9rem; margin-bottom: 15px; cursor: pointer; border: none; }
+        .back-btn:hover { background: #7f8c8d; }

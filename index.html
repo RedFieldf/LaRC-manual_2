@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>細胞班マニュアル</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="security-bar">
+        <i class="fa-solid fa-lock"></i> 【 外部流出禁止 】 (Internal Use Only)
+    </div>
+
+    <header>
+        <h1 id="header-title">細胞班マニュアル</h1>
+    </header>
+
+    <div class="container">
+
+        <div id="p-home" class="page active">
+            <div class="section-card color-green">
+                <div class="cat-title">A. 試薬・物品管理</div>
+                <div class="icon-grid">
+                    <div class="icon-btn-simple" onclick="showPage('p-order')">
+                        <i class="fa-solid fa-cart-shopping"></i><span>発注 / 受取</span>
+                    </div>
+                    <div class="icon-btn-simple" onclick="showPage('p-reagent-list')">
+                        <i class="fa-solid fa-flask"></i><span>調製</span>
+                    </div>
+                    <div class="icon-btn-simple" onclick="openGuide('reagent-duty')"><i class="fa-solid fa-people-carry-box"></i><span>試薬調製担当</span></div>
+                </div>
+            </div>
+            <div class="section-card color-orange">
+                <div class="cat-title">B. 実験フロー</div>
+                <div class="icon-grid">
+                    <div class="icon-btn-simple" onclick="showPage('p-exp-seeding')">
+                        <i class="fa-solid fa-seedling"></i><span>播種</span>
+                    </div>
+                    <div class="icon-btn-simple" onclick="showPage('p-exp-measure')">
+                        <i class="fa-solid fa-chart-line"></i><span>培養・計測</span>
+                    </div>
+                    <div class="icon-btn-simple" onclick="showPage('p-exp-cleanup')">
+                        <i class="fa-solid fa-trash"></i><span>片付け</span>
+                    </div>
+                </div>
+            </div>
+            <div class="section-card color-blue">
+                <div class="cat-title">C. 解析・ソフト</div>
+                <div class="icon-grid">
+                    <div class="icon-btn-detail" onclick="window.open('https://github.com/kkito0726/mea-viewer/blob/main/README.md', '_blank')">
+                        <i class="fa-solid fa-display"></i><span class="btn-title">MEA viewer</span><span class="btn-desc">ブラウザ上でデータ確認</span>
+                    </div>
+                    <div class="icon-btn-detail" onclick="window.open('https://github.com/kkito0726/MEA_modules/blob/main/README_ja.md', '_blank')">
+                        <i class="fa-brands fa-python"></i><span class="btn-title">pyMEA</span><span class="btn-desc">MEA計測データの解析</span>
+                    </div>
+                    <div class="icon-btn-detail" onclick="window.open('https://github.com/kkito0726/image-stitcher', '_blank')">
+                        <i class="fa-solid fa-panorama"></i><span class="btn-title">image Stitcher</span><span class="btn-desc">画像統合 (545電極など)</span>
+                    </div>
+                    <div class="icon-btn-detail" onclick="window.open('https://github.com/kkito0726/svg_converter', '_blank')">
+                        <i class="fa-solid fa-bezier-curve"></i><span class="btn-title">SVG Converter</span><span class="btn-desc">Inkscape→RasPi用CSV変換</span>
+                    </div>
+                </div>
+            </div>
+            <div class="section-card color-red">
+                <div class="cat-title">D. 機器・安全</div>
+                <div class="icon-grid">
+                    <div class="icon-btn-simple" onclick="window.open('https://drive.google.com/file/d/1IZRCrm5u0OWGaym-ynC9MuPXzLJDcV-0/view?usp=sharing', '_blank')">
+                        <i class="fa-solid fa-wind"></i><span>クリーンベンチ</span>
+                    </div>
+                    <div class="icon-btn-simple" onclick="showPage('p-gas-burner')"><i class="fa-solid fa-fire"></i><span>ガスバーナー</span></div>
+                    <div class="icon-btn-simple" onclick="showPage('p-coming-soon')"><i class="fa-solid fa-temperature-high"></i><span>インキュベーター</span></div>
+                    <div class="icon-btn-simple" onclick="showPage('p-autoclave')"><i class="fa-solid fa-prescription-bottle"></i><span>オートクレーブ</span></div>
+                    <div class="icon-btn-simple" onclick="showPage('p-coming-soon')"><i class="fa-solid fa-triangle-exclamation"></i><span>コンタミ<br>対応方法</span></div>
+                    <div class="icon-btn-simple" onclick="showPage('p-coming-soon')"><i class="fa-solid fa-door-open"></i><span>退出時の<br>確認事項</span></div>
+                </div>
+            </div>
+            <div class="section-card color-purple">
+                <div class="cat-title">E. 運営・その他</div>
+                <div class="icon-grid">
+                    <div class="icon-btn-simple" onclick="window.open('https://drive.google.com/drive/folders/1m0BESdl_YC1SYJv_bIpISJkM_2YOpVpn?usp=drive_link', '_blank')"><i class="fa-solid fa-book-open-reader"></i><span>LaRC基礎トレ</span></div>
+                    <div class="icon-btn-simple" onclick="showPage('p-admin-ta')"><i class="fa-solid fa-users-gear"></i><span>TA向け資料</span></div>
+                    <div class="icon-btn-simple" onclick="window.open('https://drive.google.com/drive/u/1/folders/1C0MbYu9U5cO83mwuMgYV6aR6Xy5CnsEv', '_blank')"><i class="fa-solid fa-graduation-cap"></i><span>卒論/修論ルール</span></div>
+                </div>
+            </div>
+            <div class="section-card color-teal">
+                <div class="cat-title">F. 予約表</div>
+                <div class="icon-grid">
+                    <div class="icon-btn-simple" onclick="openGuide('laser-plus')"><i class="fa-solid fa-calendar-check"></i><span>レーザー有 MEA</span></div>
+                    <div class="icon-btn-simple" onclick="openGuide('laser-minus')"><i class="fa-regular fa-calendar"></i><span>レーザー無 MEA</span></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="p-order" class="page">
+            <button class="back-btn" onclick="showPage('p-home')"><i class="fa-solid fa-arrow-left"></i> TOPへ戻る</button>
+            <div class="section-card color-green">
+                <div class="cat-title">発注・受取</div>
+                <ul class="menu-list">
+                    <li><div class="menu-btn" onclick="showPage('p-egg-receipt')">卵の受取方法 <i class="fa-solid fa-chevron-right"></i></div></li>
+                    <li><div class="menu-btn" onclick="showPage('p-order-method')">溶液や備品の発注方法 <i class="fa-solid fa-chevron-right"></i></div></li>
+                </ul>
+            </div>
+        </div>
+
+        <div id="p-reagent-list" class="page">
+            <button class="back-btn" onclick="showPage('p-home')"><i class="fa-solid fa-arrow-left"></i> TOPへ戻る</button>
+            <div class="section-card color-green">
+                <div class="cat-title">調製：培地 (Media)</div>
+                <ul class="menu-list">
+                    <li><div class="menu-btn" onclick="showPage('p-dmem-fbs')">DMEM ＋ P/S ＋ FBS <i class="fa-solid fa-chevron-right"></i></div></li>
+                    <li><div class="menu-btn" onclick="showPage('p-dmem-ps')">DMEM ＋ P/S <i class="fa-solid fa-chevron-right"></i></div></li>
+                    <li><div class="menu-btn" onclick="showPage('p-pbs')">PBS (-) <i class="fa-solid fa-chevron-right"></i></div></li>
+                </ul>
+            </div>
+            <div class="section-card color-green">
+                <div class="cat-title">調製：試薬・その他</div>
+                <ul class="menu-list">
+                    <li><div class="menu-btn" onclick="showPage('p-ps-trypsin')">P/S または トリプシン分注 <i class="fa-solid fa-chevron-right"></i></div></li>
+                    <li><div class="menu-btn" onclick="showPage('p-fbs-inactivation')">FBS 非働化 <i class="fa-solid fa-chevron-right"></i></div></li>
+                    <li><div class="menu-btn" onclick="showPage('p-collagenase')">コラゲナーゼ <i class="fa-solid fa-chevron-right"></i></div></li>
+                    <li><div class="menu-btn" onclick="showPage('p-agarose')">アガロース <i class="fa-solid fa-chevron-right"></i></div></li>
+                    <li><div class="menu-btn" onclick="showPage('p-pei')">PEI / ホウ酸Buffer <i class="fa-solid fa-chevron-right"></i></div></li>
+                </ul>
+            </div>
+        </div>
+
+        <div id="p-exp-seeding" class="page">
+            <button class="back-btn" onclick="showPage('p-home')"><i class="fa-solid fa-arrow-left"></i> TOPへ戻る</button>
+            <div class="section-card color-orange">
+                <div class="cat-title">MEA dishの準備</div>
+                <ul class="menu-list">
+                    <li><div class="menu-btn" onclick="showPage('p-new-mea')">新MEA開封 <i class="fa-solid fa-chevron-right"></i></div></li>
+                    <li><div class="menu-btn" onclick="showPage('p-plasma')">プラズマ処理 <i class="fa-solid fa-chevron-right"></i></div></li>
+                    <li><div class="menu-btn" onclick="showPage('p-amc-menu')">AMC加工 <i class="fa-solid fa-chevron-right"></i></div></li>
+                    <li><div class="menu-btn" onclick="showPage('p-collagen')">コラーゲン調製・播種 <i class="fa-solid fa-chevron-right"></i></div></li>
+                </ul>
+            </div>
+            <div class="section-card color-orange">
+                <div class="cat-title">心筋細胞の単離</div>
+                <ul class="menu-list">
+                    <li><div class="menu-btn" onclick="showPage('p-isolation-prep')">準備 <i class="fa-solid fa-chevron-right"></i></div></li>
+                    <li><div class="menu-btn" onclick="showPage('p-isolation-work')">解剖・単離手順 <i class="fa-solid fa-chevron-right"></i></div></li>
+                    <li><div class="menu-btn" onclick="showPage('p-cleanup-tools')">機器・器具の洗浄 <i class="fa-solid fa-chevron-right"></i></div></li>
+                </ul>
+            </div>
+        </div>
+        
+        <div id="p-coming-soon" class="page">
+            <button class="back-btn" onclick="showPage('p-home')"><i class="fa-solid fa-arrow-left"></i> TOPへ戻る</button>
+            <div class="section-card">
+                <div class="coming-soon">
+                    <i class="fa-solid fa-person-digging"></i>
+                    <h2>この項目は準備中です</h2>
+                    <p>コンテンツの追加をお待ちください。</p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div id="guide-modal" class="modal-overlay">
+        <div class="modal-box">
+            <div id="modal-title" class="modal-title">使い方の説明</div>
+            <div id="modal-text" class="modal-text"></div>
+            <div class="modal-actions">
+                <button class="btn-cancel" onclick="closeGuide()">キャンセル</button>
+                <a id="modal-link" href="#" target="_blank" class="btn-go">シートを開く</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="manual_data.js"></script>
+    <script src="script.js"></script>
+
+</body>
+</html>
