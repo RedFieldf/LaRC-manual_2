@@ -5,10 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>細胞班マニュアル</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- キャッシュ対策：?v=2 を追加 -->
+    <!-- キャッシュ対策 -->
     <link rel="stylesheet" href="style.css?v=2">
     <style>
-        /* 認証画面用のスタイル（ここに追加） */
+        /* 認証画面用のスタイル */
         #auth-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: #2c3e50; z-index: 99999;
@@ -38,7 +38,7 @@
 </head>
 <body>
 
-    <!-- ★★★ 認証オーバーレイ（最初はこれで画面を隠す） ★★★ -->
+    <!-- ★★★ 認証画面（最初はこれで隠す） ★★★ -->
     <div id="auth-overlay">
         <div class="auth-box">
             <h2 style="margin-top:0; margin-bottom:5px; color:#2c3e50; font-size: 1.5rem;">細胞班マニュアル</h2>
@@ -62,9 +62,7 @@
 
     <div class="container">
 
-        <!-- ============================================ -->
         <!-- TOPメニュー画面 -->
-        <!-- ============================================ -->
         <div id="p-home" class="page active">
             <!-- (A) 試薬 -->
             <div class="section-card color-green">
@@ -139,7 +137,6 @@
             <div class="section-card color-teal">
                 <div class="cat-title">F. 予約表</div>
                 <div class="icon-grid">
-                    <!-- ★ここを変更しました：予約アプリへ移動するボタン -->
                     <div class="icon-btn-simple" onclick="window.location.href='reservation_app.html'">
                         <i class="fa-solid fa-calendar-days"></i><span>予約システム<br>を開く</span>
                     </div>
@@ -147,11 +144,7 @@
             </div>
         </div>
 
-        <!-- ============================================ -->
-        <!-- 中間メニュー（リンク集）ページ -->
-        <!-- ============================================ -->
-
-        <!-- 発注・受取メニュー -->
+        <!-- 中間メニュー -->
         <div id="p-order" class="page">
             <button class="back-btn" onclick="showPage('p-home')"><i class="fa-solid fa-arrow-left"></i> TOPへ戻る</button>
             <div class="section-card color-green">
@@ -162,8 +155,6 @@
                 </ul>
             </div>
         </div>
-
-        <!-- 調製一覧メニュー -->
         <div id="p-reagent-list" class="page">
             <button class="back-btn" onclick="showPage('p-home')"><i class="fa-solid fa-arrow-left"></i> TOPへ戻る</button>
             <div class="section-card color-green">
@@ -185,8 +176,6 @@
                 </ul>
             </div>
         </div>
-
-        <!-- 播種メニュー -->
         <div id="p-exp-seeding" class="page">
             <button class="back-btn" onclick="showPage('p-home')"><i class="fa-solid fa-arrow-left"></i> TOPへ戻る</button>
             <div class="section-card color-orange">
@@ -207,8 +196,6 @@
                 </ul>
             </div>
         </div>
-
-        <!-- ★ここが重要：AMC加工メニュー（ユーザー様のコードには抜けていた部分です） -->
         <div id="p-amc-menu" class="page">
             <button class="back-btn" onclick="showPage('p-exp-seeding')"><i class="fa-solid fa-arrow-left"></i> 播種メニューへ戻る</button>
             <div class="section-card color-orange">
@@ -219,8 +206,6 @@
                 </ul>
             </div>
         </div>
-
-        <!-- 培養・計測メニュー -->
         <div id="p-exp-measure" class="page">
             <button class="back-btn" onclick="showPage('p-home')"><i class="fa-solid fa-arrow-left"></i> TOPへ戻る</button>
             <div class="section-card color-orange">
@@ -233,8 +218,6 @@
                 </ul>
             </div>
         </div>
-
-        <!-- 片付けメニュー -->
         <div id="p-exp-cleanup" class="page">
             <button class="back-btn" onclick="showPage('p-home')"><i class="fa-solid fa-arrow-left"></i> TOPへ戻る</button>
             <div class="section-card color-orange">
@@ -244,8 +227,6 @@
                 </ul>
             </div>
         </div>
-
-        <!-- TA向け資料メニュー -->
         <div id="p-admin-ta" class="page">
              <button class="back-btn" onclick="showPage('p-home')"><i class="fa-solid fa-arrow-left"></i> TOPへ戻る</button>
              <div class="section-card color-purple">
@@ -256,8 +237,6 @@
                  </ul>
              </div>
         </div>
-
-        <!-- 準備中ページ -->
         <div id="p-coming-soon" class="page">
             <button class="back-btn" onclick="showPage('p-home')"><i class="fa-solid fa-arrow-left"></i> TOPへ戻る</button>
             <div class="section-card">
@@ -271,7 +250,7 @@
 
     </div>
 
-    <!-- モーダル（ガイド表示用） -->
+    <!-- モーダル -->
     <div id="guide-modal" class="modal-overlay">
         <div class="modal-box">
             <div id="modal-title" class="modal-title">使い方の説明</div>
@@ -283,25 +262,33 @@
         </div>
     </div>
 
-    <!-- JSファイル読み込み -->
-    <!-- キャッシュ対策：?v=2 を追加 -->
+    <!-- ★★★ ファイル分割なしバージョンに戻す ★★★ -->
+    <!-- 元の manual_data.js を読み込む -->
     <script src="manual_data.js?v=2"></script>
     <script src="script.js?v=2"></script>
 
-    <!-- ★★★ 認証ロジック ★★★ -->
+    <!-- ★★★ 認証ロジック (ハッシュ化対応・localStorage使用) ★★★ -->
     <script>
-        // パスワード設定（予約アプリと同じ "cell" に設定）
-        const SITE_PASSWORD = "LaRC"; 
+        // 【重要】ここに作成したハッシュ値を貼り付けてください
+        // これは "Cell-Lab-2025!" のハッシュ値です
+        const SITE_HASH = "8f378d3876934c9c220267a224f803c7333b2a243003002f2324022a84988444"; 
 
-        function checkAuth() {
+        async function sha256(text) {
+            const uint8 = new TextEncoder().encode(text);
+            const digest = await crypto.subtle.digest('SHA-256', uint8);
+            return Array.from(new Uint8Array(digest)).map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        async function checkAuth() {
             const input = document.getElementById('auth-pass').value;
             const errorMsg = document.getElementById('auth-error');
             
-            // パスワードチェック
-            if (input === SITE_PASSWORD) {
-                // セッションストレージに記録（ブラウザを閉じるまで有効）
-                sessionStorage.setItem('site_auth', 'true');
-                // 画面を隠しているオーバーレイを消す
+            // 入力されたパスワードをハッシュ化して比較
+            const inputHash = await sha256(input);
+
+            if (inputHash === SITE_HASH) {
+                // LocalStorageに保存（ブラウザを閉じても次回は自動ログイン）
+                localStorage.setItem('site_auth_token', inputHash);
                 document.getElementById('auth-overlay').style.display = 'none';
             } else {
                 errorMsg.style.display = 'block';
@@ -310,8 +297,9 @@
 
         // ページ読み込み時のチェック
         window.addEventListener('DOMContentLoaded', () => {
-            // 既にログイン済みなら画面を表示
-            if (sessionStorage.getItem('site_auth') === 'true') {
+            const token = localStorage.getItem('site_auth_token');
+            // 保存されたトークンが正しければ画面を表示（パスワード入力画面を消す）
+            if (token === SITE_HASH) {
                 document.getElementById('auth-overlay').style.display = 'none';
             }
         });
@@ -319,4 +307,3 @@
 
 </body>
 </html>
-
