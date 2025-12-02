@@ -15,16 +15,14 @@
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- Icons (Lucide) -->
-    <script src="https://unpkg.com/lucide@latest"></script>
-
-    <!-- Firebase SDK -->
+    <!-- Firebase SDK (バージョン 11.6.1) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, deleteDoc, doc, query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, deleteDoc, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        window.firebaseModules = { initializeApp, getAuth, signInAnonymously, onAuthStateChanged, getFirestore, collection, addDoc, deleteDoc, doc, query, where, onSnapshot };
+        // Reactから使えるようにグローバルに公開
+        window.firebaseModules = { initializeApp, getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, getFirestore, collection, addDoc, deleteDoc, doc, onSnapshot };
     </script>
 
     <style>
@@ -41,17 +39,22 @@
     <script type="text/babel">
         const { useState, useEffect, useMemo } = React;
 
-        // 時間枠の設定 (9:00 - 21:00)
-        const TIME_SLOTS = [
-            "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", 
-            "15:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:00"
-        ];
+        // 時間枠の設定
+        const TIME_SLOTS = ["09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:00"];
 
         // 機器リスト
         const RESOURCES = [
             { id: 'laser-plus', name: 'レーザー有 MEA', color: 'teal' },
             { id: 'laser-minus', name: 'レーザー無 MEA', color: 'indigo' }
         ];
+
+        // --- アイコン ---
+        const IconCalendar = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>;
+        const IconUser = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>;
+        const IconTrash = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>;
+        const IconArrowLeft = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>;
+        const IconArrowRight = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>;
+        const IconBack = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>;
 
         // --- App Component ---
         function App() {
@@ -60,17 +63,19 @@
             const [appId, setAppId] = useState(null);
             const [selectedDate, setSelectedDate] = useState(new Date());
             const [selectedResource, setSelectedResource] = useState(RESOURCES[0].id);
-            const [reservations, setReservations] = useState([]);
+            const [allReservations, setAllReservations] = useState([]); // 全データを保持
             const [inputName, setInputName] = useState("");
             const [isModalOpen, setIsModalOpen] = useState(false);
             const [targetSlot, setTargetSlot] = useState(null);
             const [loading, setLoading] = useState(true);
 
-            // Firebase 初期化
+            // 1. Firebase 初期化 & ログイン
             useEffect(() => {
                 const initFirebase = async () => {
-                    const { initializeApp, getAuth, signInAnonymously, onAuthStateChanged, getFirestore } = window.firebaseModules;
+                    if (!window.firebaseModules) return;
+                    const { initializeApp, getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, getFirestore } = window.firebaseModules;
                     
+                    // 環境変数から設定を読み込み
                     const firebaseConfig = JSON.parse(window.__firebase_config || '{}');
                     const app = initializeApp(firebaseConfig);
                     const auth = getAuth(app);
@@ -80,43 +85,42 @@
                     setDb(firestore);
                     setAppId(currentAppId);
 
-                    // 匿名ログイン (誰でも使えるように)
-                    await signInAnonymously(auth);
+                    // 認証フロー (トークンがあればそれを使う)
+                    try {
+                        if (typeof window.__initial_auth_token !== 'undefined' && window.__initial_auth_token) {
+                            await signInWithCustomToken(auth, window.__initial_auth_token);
+                        } else {
+                            await signInAnonymously(auth);
+                        }
+                    } catch (error) {
+                        console.error("Auth Error:", error);
+                    }
+
+                    // ログイン状態監視
                     onAuthStateChanged(auth, (u) => {
                         setUser(u);
-                        // ローカルストレージから名前を復元
+                        // 名前をローカルストレージから復元（利便性のため）
                         const savedName = localStorage.getItem('my_name');
                         if (savedName) setInputName(savedName);
                     });
                 };
-                if (window.firebaseModules) initFirebase();
+                initFirebase();
             }, []);
 
-            // 予約データの監視 (日付と機器が変わるたびに再取得)
+            // 2. 予約データのリアルタイム監視
             useEffect(() => {
-                if (!db || !user) return;
+                if (!db || !user || !appId) return;
                 
-                const { collection, query, where, onSnapshot } = window.firebaseModules;
+                const { collection, onSnapshot } = window.firebaseModules;
                 
-                // 日付を文字列 YYYY-MM-DD に変換
-                const dateStr = selectedDate.toISOString().split('T')[0];
-
-                // クエリ作成: その日の、その機器の予約だけを取ってくる
-                // RULE 2: 複合クエリを避けるため、日付とリソースでフィルタリングするが、単純化のため全件取得してJSでフィルタはデータ量的に非推奨。
-                // ここでは collection -> where date -> where resource でフィルタ。
-                // Firestoreのインデックスが必要になる可能性があるが、この規模ならOK。
-                // 安全のため、データ構造を工夫するアプローチもありますが、ここでは標準的に実装します。
-                
-                const q = query(
-                    collection(db, 'artifacts', appId, 'public', 'data', 'mea_reservations'),
-                    where('date', '==', dateStr),
-                    where('resourceId', '==', selectedResource)
-                );
+                // Firestoreのパブリックデータパスを設定
+                const reservationsRef = collection(db, 'artifacts', appId, 'public', 'data', 'mea_reservations');
 
                 setLoading(true);
-                const unsubscribe = onSnapshot(q, (snapshot) => {
+                // リアルタイムリスナー (フィルタリングはクライアント側で行う)
+                const unsubscribe = onSnapshot(reservationsRef, (snapshot) => {
                     const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                    setReservations(data);
+                    setAllReservations(data);
                     setLoading(false);
                 }, (error) => {
                     console.error("Error fetching data:", error);
@@ -124,7 +128,15 @@
                 });
 
                 return () => unsubscribe();
-            }, [db, user, selectedDate, selectedResource]);
+            }, [db, user, appId]);
+
+            // 3. 表示用データ（日付と機器でフィルタリング）
+            const currentReservations = useMemo(() => {
+                const dateStr = selectedDate.toISOString().split('T')[0];
+                return allReservations.filter(r => 
+                    r.date === dateStr && r.resourceId === selectedResource
+                );
+            }, [allReservations, selectedDate, selectedResource]);
 
             // 日付操作
             const changeDate = (days) => {
@@ -135,8 +147,7 @@
 
             // 予約モーダルを開く
             const handleSlotClick = (time) => {
-                // 既に予約があるかチェック
-                const existing = reservations.find(r => r.time === time);
+                const existing = currentReservations.find(r => r.time === time);
                 
                 if (existing) {
                     // 自分の予約なら削除確認
@@ -154,16 +165,14 @@
                 }
             };
 
-            // 予約実行
+            // 予約実行 (Firestoreへ追加)
             const submitReservation = async () => {
                 if (!inputName.trim()) {
                     alert("名前を入力してください");
                     return;
                 }
                 
-                // 名前をローカルストレージに保存（次回入力を楽に）
                 localStorage.setItem('my_name', inputName);
-
                 const { collection, addDoc } = window.firebaseModules;
                 const dateStr = selectedDate.toISOString().split('T')[0];
 
@@ -183,11 +192,12 @@
                 }
             };
 
-            // 予約削除
+            // 予約削除 (Firestoreから削除)
             const deleteReservation = async (docId) => {
                 const { doc, deleteDoc } = window.firebaseModules;
                 try {
-                    await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'mea_reservations', docId));
+                    const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'mea_reservations', docId);
+                    await deleteDoc(docRef);
                 } catch (e) {
                     console.error("Error deleting reservation: ", e);
                     alert("削除に失敗しました。");
@@ -201,17 +211,6 @@
                 return `${d.getMonth() + 1}/${d.getDate()} (${days[d.getDay()]})`;
             }, [selectedDate]);
 
-            // 現在のリソースカラー
-            const currentColor = RESOURCES.find(r => r.id === selectedResource).color;
-
-            // アイコンコンポーネント
-            const IconCalendar = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>;
-            const IconUser = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>;
-            const IconTrash = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>;
-            const IconArrowLeft = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>;
-            const IconArrowRight = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>;
-            const IconBack = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>;
-
             return (
                 <div className="max-w-md mx-auto min-h-screen bg-white shadow-lg overflow-hidden flex flex-col">
                     
@@ -220,7 +219,7 @@
                         <a href="index.html" className="mr-3 p-2 hover:bg-slate-700 rounded-full transition">
                             <IconBack />
                         </a>
-                        <h1 className="font-bold text-lg">MEA予約システム</h1>
+                        <h1 className="font-bold text-lg">MEA予約システム (完全版)</h1>
                     </div>
 
                     {/* タブ切り替え */}
@@ -253,11 +252,11 @@
                     {/* タイムスロット一覧 */}
                     <div className="flex-1 p-4 overflow-y-auto">
                         {loading ? (
-                            <div className="text-center py-10 text-gray-400">読み込み中...</div>
+                            <div className="text-center py-10 text-gray-400">通信中...</div>
                         ) : (
                             <div className="space-y-3 pb-20">
                                 {TIME_SLOTS.map(time => {
-                                    const reservation = reservations.find(r => r.time === time);
+                                    const reservation = currentReservations.find(r => r.time === time);
                                     const isMine = reservation && user && reservation.uid === user.uid;
                                     const isOccupied = !!reservation;
 
@@ -347,24 +346,3 @@
     </script>
 </body>
 </html>
-```
-
-### 導入手順（最後の仕上げ）
-
-このファイル（`reservation_app.html`）は単体で動くWebアプリです。
-あとは、**元のサイト（`index.html`）から、このアプリへ飛ぶためのリンク**を貼れば完了です。
-
-#### `index.html` を少しだけ書き換えます
-先ほどまで使っていた「F. 予約表」の部分を、以下のように変更してください。
-
-```html
-            <!-- (F) 予約 -->
-            <div class="section-card color-teal">
-                <div class="cat-title">F. 予約表</div>
-                <div class="icon-grid">
-                    <!-- showPage(...) ではなく window.location.href に変更して新ファイルへ移動 -->
-                    <div class="icon-btn-simple" onclick="window.location.href='reservation_app.html'">
-                        <i class="fa-solid fa-calendar-check"></i><span>予約システム<br>を開く</span>
-                    </div>
-                </div>
-            </div>
