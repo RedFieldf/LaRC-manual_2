@@ -57,27 +57,19 @@
     <script type="text/babel">
         const { useState, useEffect, useMemo } = React;
 
-        // 時間枠の設定 (8:00 - 23:00, 30分刻み, 最終22:30開始)
+        // ★★★ 管理者パスワード設定 ★★★
+        // ここを好きなパスワードに変更してください
+        const ADMIN_PASSWORD = "momocell"; 
+
+        // 時間枠の設定 (8:00 - 23:00, 30分刻み)
         const generateTimeSlots = () => {
             const slots = [];
-            // 8時から22時までループ
-            for (let h = 8; h <= 22; h++) {
-                const hour = h.toString(); // 表示用は0埋めなしでもOKだが、IDは統一感が欲しいなら考慮
-                const hourId = h.toString().padStart(2, '0');
-                
-                const nextHour = h + 1;
-                
-                // 前半 00-30
-                slots.push({
-                    id: `${hourId}:00`,
-                    label: `${h}:00-${h}:30`
-                });
-                
-                // 後半 30-00 (次は繰り上がり)
-                slots.push({
-                    id: `${hourId}:30`,
-                    label: `${h}:30-${nextHour}:00`
-                });
+            for (let h = 8; h <= 23; h++) {
+                const hour = h.toString().padStart(2, '0');
+                slots.push(`${hour}:00`);
+                if (h !== 23) { 
+                    slots.push(`${hour}:30`);
+                }
             }
             return slots;
         };
@@ -105,18 +97,13 @@
             const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
             const target = new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate());
 
-            // 過去の日付は不可
             if (target < today) return { allowed: false, reason: "過去の日付です" };
 
-            // 現在の年月
             const currentYear = today.getFullYear();
-            const currentMonth = today.getMonth(); // 0-11
-
-            // ターゲットの年月
+            const currentMonth = today.getMonth();
             const targetYear = target.getFullYear();
             const targetMonth = target.getMonth();
 
-            // 翌月の判定
             let nextMonthYear = currentYear;
             let nextMonth = currentMonth + 1;
             if (nextMonth > 11) {
@@ -124,12 +111,10 @@
                 nextMonthYear++;
             }
 
-            // 当月ならOK
             if (targetYear === currentYear && targetMonth === currentMonth) {
                 return { allowed: true };
             }
 
-            // 翌月の場合: 25日以降ならOK
             if (targetYear === nextMonthYear && targetMonth === nextMonth) {
                 if (today.getDate() >= 25) {
                     return { allowed: true };
@@ -138,7 +123,6 @@
                 }
             }
 
-            // 翌々月以降はNG
             return { allowed: false, reason: "予約期間外です" };
         };
 
@@ -146,21 +130,12 @@
         function CalendarView({ selectedDate, onChangeDate, onSelectDate, reservations }) {
             const year = selectedDate.getFullYear();
             const month = selectedDate.getMonth();
-
-            // 月の初日と末日
             const firstDay = new Date(year, month, 1);
             const lastDay = new Date(year, month + 1, 0);
             
-            // カレンダーの日付配列生成
             const days = [];
-            // 空白埋め (日曜始まり)
-            for (let i = 0; i < firstDay.getDay(); i++) {
-                days.push(null);
-            }
-            // 日付埋め
-            for (let d = 1; d <= lastDay.getDate(); d++) {
-                days.push(new Date(year, month, d));
-            }
+            for (let i = 0; i < firstDay.getDay(); i++) days.push(null);
+            for (let d = 1; d <= lastDay.getDate(); d++) days.push(new Date(year, month, d));
 
             const changeMonth = (diff) => {
                 const newDate = new Date(selectedDate);
@@ -172,14 +147,11 @@
 
             return (
                 <div className="flex flex-col h-full bg-white">
-                    {/* カレンダーヘッダー */}
                     <div className="flex justify-between items-center p-4 bg-gray-50 border-b">
                         <button onClick={() => changeMonth(-1)} className="p-2 rounded-full hover:bg-gray-200 text-gray-600"><IconArrowLeft /></button>
                         <h2 className="text-xl font-bold text-gray-800">{year}年 {monthNames[month]}</h2>
                         <button onClick={() => changeMonth(1)} className="p-2 rounded-full hover:bg-gray-200 text-gray-600"><IconArrowRight /></button>
                     </div>
-
-                    {/* 曜日ヘッダー */}
                     <div className="grid grid-cols-7 text-center py-2 border-b text-xs font-bold text-gray-500 bg-gray-50">
                         <span className="text-red-500">日</span>
                         <span>月</span>
@@ -189,14 +161,11 @@
                         <span>金</span>
                         <span className="text-blue-500">土</span>
                     </div>
-
-                    {/* 日付グリッド */}
                     <div className="grid grid-cols-7 flex-1 auto-rows-fr p-2 gap-1 bg-gray-100 overflow-y-auto">
                         {days.map((date, i) => {
                             if (!date) return <div key={i} className="bg-transparent"></div>;
                             
                             const dateStr = date.toISOString().split('T')[0];
-                            // その日の予約数
                             const count = reservations.filter(r => r.date === dateStr).length;
                             const isToday = new Date().toDateString() === date.toDateString();
                             const { allowed } = isBookingAllowed(date);
@@ -214,15 +183,11 @@
                                     }`}>
                                         {date.getDate()}
                                     </span>
-                                    
-                                    {/* 予約インジケーター */}
                                     {count > 0 && (
                                         <span className="mt-1 px-2 py-0.5 bg-teal-100 text-teal-700 text-[10px] font-bold rounded-full">
                                             {count}件
                                         </span>
                                     )}
-
-                                    {/* 予約不可マーク */}
                                     {!allowed && (
                                         <span className="absolute bottom-1 right-1 text-gray-300">
                                             <IconLock />
@@ -242,15 +207,12 @@
             const [db, setDb] = useState(null);
             const [appId, setAppId] = useState(null);
             
-            // 画面の状態: 'calendar' | 'slots'
             const [viewMode, setViewMode] = useState('calendar');
-            
             const [selectedDate, setSelectedDate] = useState(new Date());
             const [selectedResource, setSelectedResource] = useState(RESOURCES[0].id);
             const [allReservations, setAllReservations] = useState([]);
             const [loading, setLoading] = useState(true);
 
-            // モーダル入力用State
             const [isModalOpen, setIsModalOpen] = useState(false);
             const [targetSlot, setTargetSlot] = useState(null);
             const [inputName, setInputName] = useState("");
@@ -258,7 +220,6 @@
             const [inputPurpose, setInputPurpose] = useState("mea"); 
             const [inputWavelength, setInputWavelength] = useState("1480"); 
 
-            // Firebase 初期化
             useEffect(() => {
                 const initFirebase = async () => {
                     if (!window.firebaseModules) return;
@@ -283,7 +244,6 @@
                 initFirebase();
             }, []);
 
-            // データ監視
             useEffect(() => {
                 if (!db || !user || !appId) return;
                 const { collection, onSnapshot } = window.firebaseModules;
@@ -301,7 +261,6 @@
                 return () => unsubscribe();
             }, [db, user, appId]);
 
-            // 現在選択中のリソース・日付の予約リスト
             const currentReservations = useMemo(() => {
                 const dateStr = selectedDate.toISOString().split('T')[0];
                 return allReservations.filter(r => 
@@ -309,40 +268,48 @@
                 );
             }, [allReservations, selectedDate, selectedResource]);
 
-            // カレンダーで使うためのリソース全体の予約リスト（件数表示用）
             const resourceReservations = useMemo(() => {
                 return allReservations.filter(r => r.resourceId === selectedResource);
             }, [allReservations, selectedResource]);
 
-            // 予約枠クリック時
+            // ★★★ 予約枠クリック時の処理 (管理者削除機能追加) ★★★
             const handleSlotClick = (slot) => {
-                // 予約制限チェック
                 const status = isBookingAllowed(selectedDate);
-                
                 const existing = currentReservations.find(r => r.time === slot.id);
                 
                 if (existing) {
                     if (existing.uid === user.uid) {
+                        // 自分の予約の場合
                         if (confirm(`「${slot.label}」の予約を取り消しますか？`)) {
                             deleteReservation(existing.id);
                         }
                     } else {
-                        let msg = `予約者: ${existing.name}\n`;
+                        // 他人の予約の場合：詳細表示 ＋ 管理者削除
+                        let msg = `【予約詳細】\n予約者: ${existing.name}\n`;
                         if (existing.resourceId === 'laser-plus') {
                             msg += `目的: ${existing.purpose === 'laser_only' ? 'レーザー照射のみ' : 'MEA計測'}\n`;
                             msg += `波長: ${existing.wavelength || '1480'}nm\n`;
                         }
-                        if (existing.note) msg += `備考: ${existing.note}`;
-                        alert(msg);
+                        if (existing.note) msg += `備考: ${existing.note}\n`;
+                        
+                        msg += `\n管理者としてこの予約を削除しますか？`;
+
+                        if (confirm(msg)) {
+                            const inputPass = prompt("管理者パスワードを入力してください");
+                            if (inputPass === ADMIN_PASSWORD) {
+                                deleteReservation(existing.id);
+                                alert("管理者権限で削除しました。");
+                            } else if (inputPass !== null) {
+                                alert("パスワードが違います。");
+                            }
+                        }
                     }
                 } else {
-                    // 空き枠クリック時：制限チェック
                     if (!status.allowed) {
                         alert(status.reason);
                         return;
                     }
-                    // 新規予約
-                    setTargetSlot(slot); // slotオブジェクト全体をセット
+                    setTargetSlot(slot);
                     setInputNote("");
                     setInputPurpose("mea");
                     setInputWavelength("1480");
@@ -362,7 +329,7 @@
                 const saveData = {
                     date: dateStr,
                     resourceId: selectedResource,
-                    time: targetSlot.id, // IDを保存
+                    time: targetSlot.id,
                     name: inputName,
                     note: inputNote,
                     uid: user.uid,
@@ -397,13 +364,11 @@
                 return `${d.getMonth() + 1}/${d.getDate()} (${days[d.getDay()]})`;
             }, [selectedDate]);
 
-            // 制限状態の取得
             const bookingStatus = isBookingAllowed(selectedDate);
 
             return (
                 <div className="max-w-md mx-auto min-h-screen bg-white shadow-lg overflow-hidden flex flex-col relative">
                     
-                    {/* ヘッダー */}
                     <div className="bg-slate-800 text-white p-4 flex items-center shadow-md shrink-0 z-20">
                         <a href="index.html" className="mr-3 p-2 hover:bg-slate-700 rounded-full transition">
                             <IconBack />
@@ -411,7 +376,6 @@
                         <h1 className="font-bold text-lg">MEA予約システム</h1>
                     </div>
 
-                    {/* タブ切り替え (常に表示) */}
                     <div className="flex border-b shrink-0 bg-white z-20">
                         {RESOURCES.map(res => (
                             <button
@@ -428,10 +392,7 @@
                         ))}
                     </div>
 
-                    {/* コンテンツエリア */}
                     <div className="flex-1 overflow-hidden relative">
-                        
-                        {/* カレンダービュー */}
                         {viewMode === 'calendar' && (
                             <div className="h-full animate-fade-in">
                                 <CalendarView 
@@ -446,10 +407,8 @@
                             </div>
                         )}
 
-                        {/* タイムスロットビュー */}
                         {viewMode === 'slots' && (
                             <div className="h-full flex flex-col animate-fade-in bg-f3f4f6">
-                                {/* 日付ナビゲーション */}
                                 <div className="flex justify-between items-center p-3 bg-gray-50 border-b sticky top-0 z-10 shrink-0">
                                     <button onClick={() => setViewMode('calendar')} className="flex items-center gap-1 px-3 py-1.5 rounded bg-white shadow text-sm font-bold text-gray-600 hover:bg-gray-100">
                                         <IconCalendar /> カレンダー
@@ -457,10 +416,9 @@
                                     <div className="font-bold text-lg text-gray-700">
                                         {dateDisplay}
                                     </div>
-                                    <div className="w-20"></div> {/* レイアウト調整用 */}
+                                    <div className="w-20"></div>
                                 </div>
 
-                                {/* 予約制限の警告 */}
                                 {!bookingStatus.allowed && (
                                     <div className="bg-red-100 text-red-700 p-2 text-center text-sm font-bold border-b border-red-200">
                                         <IconLock className="inline mb-1 mr-1"/> {bookingStatus.reason}
@@ -487,7 +445,7 @@
                                                                 ? 'bg-blue-50 border-blue-500' 
                                                                 : 'bg-red-50 border-red-500'
                                                             : !bookingStatus.allowed 
-                                                                ? 'bg-gray-100 border-gray-300 opacity-60' // 予約不可時はグレーアウト
+                                                                ? 'bg-gray-100 border-gray-300 opacity-60'
                                                                 : 'bg-white border-gray-300 hover:bg-gray-50'
                                                         }`}
                                                     >
@@ -553,7 +511,6 @@
                         )}
                     </div>
 
-                    {/* 予約モーダル */}
                     {isModalOpen && (
                         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 animate-fade-in">
                             <div className="bg-white w-full max-w-sm rounded-2xl p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
