@@ -470,6 +470,26 @@ const manuals = {
         ]
     },
 
+        // --- レーザー照射 ---
+    "p-laser-irradiation": {
+        title: "レーザー照射",
+        content: [
+            { type: 'note', title: '波長選択', text: '使用するレーザーの波長を選択してください。' },
+            {
+                type: 'link',
+                url: 'https://drive.google.com/file/d/1NmkOLRZRGGl4gR6jQiQo0apIBRgxfK2_/view?usp=sharing',
+                icon: 'fa-file-pdf',
+                text: '波長 1,465 nm'
+            },
+            {
+                type: 'link',
+                url: 'https://drive.google.com/file/d/1GU80l2v2SdKjs5Cb1HOvwGWQsj50v5pF/view?usp=sharing',
+                icon: 'fa-file-pdf',
+                text: '波長 1,480 nm'
+            }
+        ]
+    },
+
     // =================================================================
     // B. 実験フロー - 片付け
     // =================================================================
@@ -624,6 +644,7 @@ const manuals = {
     }
 
 };
+
 
 
 
