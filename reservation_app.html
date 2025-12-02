@@ -57,17 +57,27 @@
         const { useState, useEffect, useMemo } = React;
 
         // ★★★ 管理者パスワード設定 ★★★
-        const ADMIN_PASSWORD = "cell"; 
+        const ADMIN_PASSWORD = "momocell"; 
 
-        // 時間枠の設定 (8:00 - 23:00, 30分刻み)
+        // 時間枠の設定 (8:00 - 23:00, 30分刻み, 最終22:30開始)
         const generateTimeSlots = () => {
             const slots = [];
-            for (let h = 8; h <= 23; h++) {
-                const hour = h.toString().padStart(2, '0');
-                slots.push(`${hour}:00`);
-                if (h !== 23) { 
-                    slots.push(`${hour}:30`);
-                }
+            for (let h = 8; h <= 22; h++) {
+                const hour = h.toString();
+                const hourId = h.toString().padStart(2, '0');
+                const nextHour = h + 1;
+                
+                // 00分開始枠
+                slots.push({
+                    id: `${hourId}:00`,
+                    label: `${h}:00-${h}:30`
+                });
+                
+                // 30分開始枠
+                slots.push({
+                    id: `${hourId}:30`,
+                    label: `${h}:30-${nextHour}:00`
+                });
             }
             return slots;
         };
