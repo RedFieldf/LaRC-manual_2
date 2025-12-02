@@ -55,8 +55,8 @@
     <script type="text/babel">
         const { useState, useEffect, useMemo } = React;
 
-        // 管理者パスワード (ハッシュ値: "Cell-Lab-2025!")
-        const ADMIN_HASH = "8f378d3876934c9c220267a224f803c7333b2a243003002f2324022a84988444";
+        // 管理者パスワード
+        const ADMIN_HASH = "0ee90d89ff7e29bd4950bab53abba1cfd82ff2edd27151e48725b614f1b21643";
 
         async function sha256(text) {
             const uint8 = new TextEncoder().encode(text);
@@ -480,3 +480,4 @@
     </script>
 </body>
 </html>
+
