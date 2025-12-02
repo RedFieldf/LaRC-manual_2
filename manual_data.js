@@ -579,71 +579,9 @@ const manuals = {
     // E. 運営・その他
     // =================================================================
 
-    // --- 生命機能学基礎実験Ⅱ 準備 ---
-    "p-basic-exp-prep": {
-        title: "生命機能学基礎実験Ⅱ 準備 (6/23)",
-        content: [
-            { type: 'text', text: '<div class="step-sub" style="text-align:right; margin-bottom:15px;">250610 赤田萌々</div>' },
-            { type: 'sub-title', text: '当日の流れ' },
-            {
-                type: 'text',
-                text: '<div class="step-sub"><ul><li><strong>形式：</strong>前後半で分かれ「全体説明 (Zoom) → 実習/演習 (16時交代)」</li><li><strong>配置：</strong>各班2テーブル、各テーブル顕微鏡3台設置。<br>（顕微鏡1台につきシャーレ1枚配布 ＝ 各班6枚使用）</li><li><strong>人数：</strong>A-H班、各12名</li></ul></div>'
-            },
-            { type: 'sub-title', text: '当日必要なもの' },
-            { type: 'warning', title: '在庫確認 (2週間前)', text: 'DMEMやTrypsinなどは、<strong>2週間前</strong>に在庫が足りるか確認すること！！<br>普段の実験 ＋ 2本は余分に発注しておくこと。' },
-            {
-                type: 'text',
-                text: `<ul class="menu-list" style="font-size:0.95rem;">
-                        <li>✅ <strong>60 mm Tissue culture dish（Fib培養）</strong><br>50 枚（各班6枚×8班＋予備2）</li>
-                        <li>✅ <strong>60 mm Tissue culture dish（Fibなし）</strong><br>50 枚（各班6枚×8班＋予備2）</li>
-                        <li>✅ <strong>DMEM + 10% FBS + 1% P/S</strong><br>30 mL × 17 本（各班1本＋予備1）</li>
-                        <li>✅ <strong>PBS (-)</strong><br>30 mL × 17 本（各班1本＋予備1）</li>
-                        <li>✅ <strong>Trypsin EDTA</strong><br>(Trypsin : PBS = 1 : 1 で希釈済)<br>1.2 mL × 26 本（各班3本＋予備2）</li>
-                        <li>✅ <strong>トリパンブルー</strong><br>100 µL × 17 本（16本＋予備1）</li>
-                        <li>✅ <strong>C-Chip（血球計算盤）</strong><br>50 枚（48枚＋予備2）</li>
-                        <li>✅ <strong>手袋</strong><br>学生人数分（※要先生相談）</li>
-                       </ul>`
-            },
-            { type: 'sub-title', text: '使用したFib (卵数:各26個)' },
-            { type: 'text', text: '<ul style="list-style:none; padding-left:10px;"><li><strong>3週間前 (06/03)：</strong>予備①</li><li><strong>2週間前 (06/10)：</strong>本命</li><li><strong>1週間前 (06/17)：</strong>予備②</li></ul>' },
-            { type: 'sub-title', text: '継代培養 1回目 (開始3日後)' },
-            { type: 'text', text: '<div class="step-sub" style="margin-bottom:10px;"><strong>概要：</strong>コルベン 1 枚 → 3 枚</div>' },
-            {
-                type: 'step',
-                list: [
-                    { title: "洗浄", sub: "培地を捨て、PBS (-) 3 mL でWash。これを2, 3回繰り返す。" },
-                    { title: "剥離", sub: "トリプシン・EDTA (混和済) 3 ml を加える。<br>顕微鏡で8割程度剥がれるまで確認。<br><span style=\"color:#c0392b;\">※やりすぎ注意！接着力が弱まります。</span>" },
-                    { title: "反応停止・回収", sub: "DMEMを勢いよく加え、全量 15 mL にする。<br>50 mL チューブに移し、<strong>1000 rpm, 5 min</strong> で遠心。" },
-                    { title: "播種", sub: "上清除去後、DMEM 10 mL で懸濁（ピペッティングで均一化）。<br>新しいコルベン3枚に、<strong>4 mL ずつ</strong>加える。" }
-                ]
-            },
-            { type: 'note', title: '', text: '※3日後だと100%コンフルエントだったので、2日後でも良いかも。適宜確認すること。' },
-            { type: 'sub-title', text: '継代培養 2回目 (開始10日後)' },
-            { type: 'text', text: '<div class="step-sub"><strong>概要：</strong>コルベン 1 枚 → 3 枚（手順は1回目と同上）</div>' },
-            { type: 'sub-title', text: '継代培養 3回目 (開始17日後)' },
-            { type: 'text', text: '<div class="step-sub" style="margin-bottom:10px;"><strong>概要：</strong>コルベン 1 枚 → 60 mm Dish 3-4 枚</div>' },
-            {
-                type: 'step',
-                list: [
-                    { title: "洗浄・剥離", sub: "PBS Wash × 2,3回 → トリプシン 3 ml。<br>8割剥がれたら DMEM で全量 10 mL にして止める。" },
-                    { title: "回収・遠心", sub: "同じ解剖日のものを50 mL チューブにまとめる（計 30 mL）。<br>5 mL メスアップしてバランスを取り、<strong>1000 rpm, 5 min</strong> で遠心。" },
-                    { title: "懸濁", sub: "上清除去後、DMEM 2 mL でペレットを崩す。<br>さらに DMEM 10 mL (or 14 mL) を加え均一にする。" },
-                    { title: "播種 (4 mL/dish)", sub: "質の良いFibは4枚、イマイチなFibは3枚に分ける。<br><strong>各 4 mL ずつ</strong>播種する。" }
-                ]
-            },
-            { type: 'note', title: '', text: '播種30分後は貼りつきが悪くても、3日後（月曜）にはコンフルエントになります。' },
-            { type: 'sub-title', text: '当日準備 (開始24日後)' },
-            {
-                type: 'step',
-                list: [
-                    { title: "培地交換", sub: "DMEM全量を除去し、<strong>FBSなしDMEM 2 mL</strong> を加える。" },
-                    { title: "選別・配布", sub: "位相差顕微鏡で確認。<br>・100%コンフルエント → 「100%」と書いて配布。<br>・状態が良くないもの → 「予備」として配布しない。" }
-                ]
-            }
-        ]
-    }
 
 };
+
 
 
 
