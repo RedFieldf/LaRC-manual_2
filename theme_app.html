@@ -54,8 +54,8 @@
     <script type="text/babel">
         const { useState, useEffect, useMemo } = React;
 
-        // 管理者削除用パスワード（ハッシュ値: "cell"）
-        const ADMIN_HASH = "d1c8ef133fe0d499fd6b15a654585d02cf5096faad3a71cc4f60ade5fa3307d4";
+        // 管理者削除用パスワード
+        const ADMIN_HASH = "0ee90d89ff7e29bd4950bab53abba1cfd82ff2edd27151e48725b614f1b21643";
 
         async function sha256(text) {
             const uint8 = new TextEncoder().encode(text);
@@ -403,3 +403,4 @@
     </script>
 </body>
 </html>
+
