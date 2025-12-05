@@ -155,9 +155,13 @@
             <div class="section-card color-teal">
                 <div class="cat-title">F. 予約表</div>
                 <div class="icon-grid">
-                    <!-- ★ここを変更：直接リンクではなく、警告表示関数を呼ぶ -->
+                    <!-- ★MEA予約（警告モーダルを開く） -->
                     <div class="icon-btn-simple" onclick="openReservationWarning()">
-                        <i class="fa-solid fa-calendar-days"></i><span>予約システム<br>を開く</span>
+                        <i class="fa-solid fa-calendar-days"></i><span>MEA予約<br>を開く</span>
+                    </div>
+                    <!-- ★播種量管理（新アプリを開く） -->
+                    <div class="icon-btn-simple" onclick="window.location.href='seeding_app.html'">
+                        <i class="fa-solid fa-flask"></i><span>播種量管理<br>を開く</span>
                     </div>
                 </div>
             </div>
@@ -232,6 +236,7 @@
                 <ul class="menu-list">
                     <li><div class="menu-btn" onclick="showPage('p-mea-measurement')">MEA計測 <i class="fa-solid fa-chevron-right"></i></div></li>
                     <li><div class="menu-btn" onclick="window.open('https://drive.google.com/file/d/1ldC2vfBFAZ_5h8NMRc_v0tRhNLkJdlMJ/view?usp=sharing', '_blank')">カルシウムイメージング <i class="fa-solid fa-chevron-right"></i></div></li>
+                    <!-- ★リンク先変更：波長選択画面へ -->
                     <li><div class="menu-btn" onclick="showPage('p-laser-irradiation')">レーザー照射 <i class="fa-solid fa-chevron-right"></i></div></li>
                     <li><div class="menu-btn" onclick="showPage('p-coming-soon')">細胞染色 <i class="fa-solid fa-chevron-right"></i></div></li>
                 </ul>
@@ -251,8 +256,9 @@
              <div class="section-card color-purple">
                  <div class="cat-title">TA向け資料</div>
                  <ul class="menu-list">
-                     <li><div class="menu-btn" onclick="window.open('https://drive.google.com/drive/folders/1r0pCq4798mks_wu19glGB9mPMxxXcz0N?usp=sharing', '_blank')">基礎実験Ⅱ準備 <i class="fa-solid fa-chevron-right"></i></div></li>
-                     <li><div class="menu-btn" onclick="window.open('https://drive.google.com/drive/folders/1YZsXBQQ1vR2ruXe81NJa9wXbFVBbSTlE?usp=sharing', '_blank')">学祭準備 <i class="fa-solid fa-chevron-right"></i></div></li>
+                     <!-- ★リンク先変更：Googleドライブへ -->
+                     <li><div class="menu-btn" onclick="window.open('https://drive.google.com/drive/folders/1r0pCq4798mks_wu19glGB9mPMxxXcz0N?usp=sharing', '_blank')">基礎実験準備 <i class="fa-solid fa-chevron-right"></i></div></li>
+                     <li><div class="menu-btn" onclick="window.open('https://drive.google.com/drive/folders/1sb8EctMdssIDfWBfbviTxowtvzaLmIv9?usp=sharing', '_blank')">学祭準備 <i class="fa-solid fa-chevron-right"></i></div></li>
                  </ul>
              </div>
         </div>
@@ -269,7 +275,7 @@
 
     </div>
 
-    <!-- モーダル -->
+    <!-- ガイド用モーダル -->
     <div id="guide-modal" class="modal-overlay">
         <div class="modal-box">
             <div id="modal-title" class="modal-title">使い方の説明</div>
@@ -288,14 +294,12 @@
                 <i class="fa-solid fa-triangle-exclamation"></i> 予約ルール確認
             </div>
             <div class="warning-text-box">
-                <span class="warning-point">先着順ではない！</span>
-                希望日程が被った場合、譲り合うこと<br>
-                （予約は毎月25日開始）<br><br>
+                <span class="warning-point">先着順ではない！！</span>
+                同じ時間帯に複数希望者がいる場合は譲り合って使用すること！！<br>
+                （予約は毎月25日開始！）<br><br>
                 <span class="warning-point">10分ルール</span>
-                開始10分を過ぎても、予約者が来ない場合、<br>
-                予約していない人が使ってOK！<br>
-                （ただし、予約者優先とするので<br>
-                　上手くやってね。）
+                開始時刻10分を過ぎても、予約者からの連絡がない場合は、予約していない人が使ってもOK！<br>
+                （その後予約者が来たら、予約者優先とする）
             </div>
             <div class="modal-actions">
                 <button class="btn-cancel" onclick="closeReservationWarning()">戻る</button>
@@ -349,5 +353,3 @@
 
 </body>
 </html>
-
-
