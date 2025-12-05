@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>播種量管理システム</title>
+    
+    <!-- React & ReactDOM (安定版) -->
+    <script crossorigin src="https://unpkg.com/react@18.2.0/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, deleteDoc, doc, onSnapshot, orderBy, query, where } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAU02VkWid0YqFxj2t7saBfmTH7oEYOshc",
+            authDomain: "cell-manual.firebaseapp.com",
+            projectId: "cell-manual",
+            storageBucket: "cell-manual.firebasestorage.app",
+            messagingSenderId: "488469326630",
+            appId: "1:488469326630:web:5703fe9fc84fb1c64a6fe7",
+            measurementId: "G-9MC4FZXEEH"
+        };
+
+        window.firebaseModules = { initializeApp, getAuth, signInAnonymously, onAuthStateChanged, getFirestore, collection, addDoc, deleteDoc, doc, onSnapshot, orderBy, query, where };
+        
+        const app = initializeApp(firebaseConfig);
+        window.auth = getAuth(app);
+        window.db = getFirestore(app);
+        window.appId = "cell-manual-reservation"; 
+    </script>
+
+    <style>
+        body { background-color: #f3f4f6; font-family: "Helvetica Neue", Arial, sans-serif; -webkit-tap-highlight-color: transparent; }
+        .animate-fade-in { animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        input[type=number]::-webkit-inner-spin-button, 
+        input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useMemo } = React;
+
+        const ADMIN_HASH = "d1c8ef133fe0d499fd6b15a654585d02cf5096faad3a71cc4f60ade5fa3307d4";
+
+        async function sha256(text) {
+            const uint8 = new TextEncoder().encode(text);
+            const digest = await crypto.subtle.digest('SHA-256', uint8);
+            return Array.from(new Uint8Array(digest)).map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        // --- アイコン ---
+        const IconArrowLeft = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>;
+        const IconArrowRight = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>;
+        const IconBack = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>;
+        const IconPlus = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>;
+        const IconTrash = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>;
+        const IconCalendar = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>;
+
+        // --- カレンダーコンポーネント (播種量表示付き) ---
+        function CalendarView({ selectedDate, onChangeDate, onSelectDate, allReservations }) {
+            const year = selectedDate.getFullYear();
+            const month = selectedDate.getMonth();
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+            
+            const days = [];
+            for (let i = 0; i < firstDay.getDay(); i++) days.push(null);
+            for (let d = 1; d <= lastDay.getDate(); d++) days.push(new Date(year, month, d));
+
+            const changeMonth = (diff) => {
+                const newDate = new Date(selectedDate);
+                newDate.setMonth(newDate.getMonth() + diff);
+                onChangeDate(newDate);
+            };
+
+            const monthNames = ["1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月"];
+
+            return (
+                <div className="flex flex-col h-full bg-white">
+                    <div className="flex justify-between items-center p-4 bg-gray-50 border-b">
+                        <button onClick={() => changeMonth(-1)} className="p-2 rounded-full hover:bg-gray-200 text-gray-600"><IconArrowLeft /></button>
+                        <h2 className="text-xl font-bold text-gray-800">{year}年 {monthNames[month]}</h2>
+                        <button onClick={() => changeMonth(1)} className="p-2 rounded-full hover:bg-gray-200 text-gray-600"><IconArrowRight /></button>
+                    </div>
+                    <div className="grid grid-cols-7 text-center py-2 border-b text-xs font-bold text-gray-500 bg-gray-50">
+                        <span className="text-red-500">日</span>
+                        <span>月</span>
+                        <span>火</span>
+                        <span>水</span>
+                        <span>木</span>
+                        <span>金</span>
+                        <span className="text-blue-500">土</span>
+                    </div>
+                    <div className="grid grid-cols-7 flex-1 auto-rows-fr p-2 gap-1 bg-gray-100 overflow-y-auto">
+                        {days.map((date, i) => {
+                            if (!date) return <div key={i} className="bg-transparent"></div>;
+                            
+                            const dateStr = date.toISOString().split('T')[0];
+                            const dayReservations = allReservations.filter(r => r.date === dateStr);
+                            
+                            // 合計計算
+                            const dayTotal = dayReservations.reduce((acc, curr) => ({
+                                cell: acc.cell + (Number(curr.cellVol) || 0),
+                                collagen: acc.collagen + (Number(curr.collagenVol) || 0)
+                            }), { cell: 0, collagen: 0 });
+
+                            const isToday = new Date().toDateString() === date.toDateString();
+                            const hasData = dayReservations.length > 0;
+
+                            return (
+                                <button
+                                    key={i}
+                                    onClick={() => onSelectDate(date)}
+                                    className={`relative flex flex-col items-center justify-start pt-1 rounded-lg transition border shadow-sm h-24 
+                                        ${isToday ? 'bg-blue-50 border-blue-400 ring-2 ring-blue-200' : 'bg-white border-gray-200 hover:bg-gray-50'}
+                                    `}
+                                >
+                                    <span className={`text-sm font-bold mb-1 ${
+                                        date.getDay() === 0 ? 'text-red-500' : date.getDay() === 6 ? 'text-blue-500' : 'text-gray-700'
+                                    }`}>
+                                        {date.getDate()}
+                                    </span>
+                                    
+                                    {hasData && (
+                                        <div className="w-full px-1 flex flex-col gap-0.5">
+                                            {dayTotal.cell > 0 && (
+                                                <span className="text-[9px] bg-teal-100 text-teal-800 px-1 rounded truncate w-full text-center font-bold">
+                                                    C: {dayTotal.cell}
+                                                </span>
+                                            )}
+                                            {dayTotal.collagen > 0 && (
+                                                <span className="text-[9px] bg-orange-100 text-orange-800 px-1 rounded truncate w-full text-center font-bold">
+                                                    Co: {dayTotal.collagen}
+                                                </span>
+                                            )}
+                                            <span className="text-[8px] text-gray-400">{dayReservations.length}件</span>
+                                        </div>
+                                    )}
+                                </button>
+                            );
+                        })}
+                    </div>
+                </div>
+            );
+        }
+
+        // --- App Component ---
+        function App() {
+            const [user, setUser] = useState(null);
+            const [viewMode, setViewMode] = useState('calendar');
+            const [selectedDate, setSelectedDate] = useState(new Date());
+            const [allReservations, setAllReservations] = useState([]); // 全データ保持
+            const [loading, setLoading] = useState(true);
+            
+            // モーダル関連
+            const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+            const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+            const [deleteTarget, setDeleteTarget] = useState(null);
+            const [deletePassword, setDeletePassword] = useState("");
+
+            // 入力フォーム
+            const [inputName, setInputName] = useState("");
+            const [inputDensity, setInputDensity] = useState("");
+            const [inputCellVol, setInputCellVol] = useState("");
+            const [inputCollagenVol, setInputCollagenVol] = useState("");
+            const [inputNote, setInputNote] = useState("");
+
+            // ★★★ 過去日判定ロジック ★★★
+            const isPastDate = useMemo(() => {
+                const today = new Date();
+                today.setHours(0, 0, 0, 0); // 今日の0時0分0秒
+                const target = new Date(selectedDate);
+                target.setHours(0, 0, 0, 0); // ターゲット日の0時0分0秒
+                return target < today;
+            }, [selectedDate]);
+
+            // 1. Firebase ログイン監視
+            useEffect(() => {
+                const { signInAnonymously, onAuthStateChanged } = window.firebaseModules;
+                signInAnonymously(window.auth).catch(e => console.error("Auth Error:", e));
+
+                const unsubscribe = onAuthStateChanged(window.auth, (u) => {
+                    setUser(u);
+                    if (u) {
+                        const savedName = localStorage.getItem('my_name_seeding');
+                        if (savedName) setInputName(savedName);
+                    }
+                });
+                return () => unsubscribe();
+            }, []);
+
+            // 2. データ監視
+            useEffect(() => {
+                if (!user) return;
+                setLoading(true);
+
+                const { collection, query, orderBy, onSnapshot } = window.firebaseModules;
+                const q = query(
+                    collection(window.db, 'artifacts', window.appId, 'public', 'data', 'seeding_reservations'),
+                    orderBy('createdAt', 'asc')
+                );
+
+                const unsubscribe = onSnapshot(q, (snapshot) => {
+                    const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    setAllReservations(data);
+                    setLoading(false);
+                }, (error) => {
+                    console.error("DB Error:", error);
+                    setLoading(false);
+                });
+
+                return () => unsubscribe();
+            }, [user]);
+
+            // 選択された日付のデータ
+            const dayReservations = useMemo(() => {
+                const dateStr = selectedDate.toISOString().split('T')[0];
+                return allReservations.filter(r => r.date === dateStr);
+            }, [allReservations, selectedDate]);
+
+            // 日別合計計算
+            const dayTotals = useMemo(() => {
+                return dayReservations.reduce((acc, curr) => {
+                    acc.collagen += Number(curr.collagenVol) || 0;
+                    
+                    const dens = curr.density && curr.density.trim() !== "" ? curr.density : "未指定";
+                    const vol = Number(curr.cellVol) || 0;
+                    if (!acc.cellByDensity[dens]) {
+                        acc.cellByDensity[dens] = 0;
+                    }
+                    acc.cellByDensity[dens] += vol;
+                    
+                    return acc;
+                }, { cellByDensity: {}, collagen: 0 });
+            }, [dayReservations]);
+
+            // 日付操作
+            const changeDate = (days) => {
+                const newDate = new Date(selectedDate);
+                newDate.setDate(newDate.getDate() + days);
+                setSelectedDate(newDate);
+            };
+            const dateDisplay = useMemo(() => {
+                const d = selectedDate;
+                const days = ['日', '月', '火', '水', '木', '金', '土'];
+                return `${d.getMonth() + 1}/${d.getDate()} (${days[d.getDay()]})`;
+            }, [selectedDate]);
+
+            // 登録処理
+            const handleSubmit = async () => {
+                if (!inputName.trim()) return alert("名前を入力してください");
+                localStorage.setItem('my_name_seeding', inputName);
+                const { collection, addDoc } = window.firebaseModules;
+                const dateStr = selectedDate.toISOString().split('T')[0];
+                try {
+                    await addDoc(collection(window.db, 'artifacts', window.appId, 'public', 'data', 'seeding_reservations'), {
+                        date: dateStr,
+                        name: inputName,
+                        density: inputDensity,
+                        cellVol: Number(inputCellVol),
+                        collagenVol: Number(inputCollagenVol),
+                        note: inputNote,
+                        uid: user.uid,
+                        createdAt: new Date().toISOString()
+                    });
+                    setIsAddModalOpen(false);
+                    setInputDensity("");
+                    setInputCellVol("");
+                    setInputCollagenVol("");
+                    setInputNote("");
+                } catch (e) { alert("保存に失敗しました"); }
+            };
+
+            // 削除処理
+            const handleDeleteClick = (item) => {
+                setDeleteTarget(item);
+                setDeletePassword("");
+                if (item.uid === user.uid) {
+                    if (confirm("このデータを削除しますか？")) executeDelete(item.id);
+                } else {
+                    setIsDeleteModalOpen(true);
+                }
+            };
+            const executeDelete = async (docId) => {
+                const { doc, deleteDoc } = window.firebaseModules;
+                try {
+                    await deleteDoc(doc(window.db, 'artifacts', window.appId, 'public', 'data', 'seeding_reservations', docId));
+                    setIsDeleteModalOpen(false);
+                    setDeleteTarget(null);
+                } catch (e) { alert("削除に失敗しました"); }
+            };
+            const handleAdminDelete = async () => {
+                const hash = await sha256(deletePassword);
+                if (hash === ADMIN_HASH) executeDelete(deleteTarget.id);
+                else alert("パスワードが違います");
+            };
+
+            return (
+                <div className="max-w-md mx-auto min-h-screen bg-white shadow-lg overflow-hidden flex flex-col relative">
+                    
+                    {/* ヘッダー */}
+                    <div className="bg-slate-800 text-white p-4 flex items-center shadow-md shrink-0 z-20">
+                        <a href="index.html" className="mr-3 p-2 hover:bg-slate-700 rounded-full transition">
+                            <IconBack />
+                        </a>
+                        <h1 className="font-bold text-lg">播種量予約システム</h1>
+                    </div>
+
+                    {/* メインコンテンツ */}
+                    <div className="flex-1 overflow-hidden relative">
+                        
+                        {/* カレンダービュー */}
+                        {viewMode === 'calendar' && (
+                            <div className="h-full animate-fade-in">
+                                <CalendarView 
+                                    selectedDate={selectedDate}
+                                    onChangeDate={setSelectedDate}
+                                    onSelectDate={(date) => {
+                                        setSelectedDate(date);
+                                        setViewMode('list');
+                                    }}
+                                    allReservations={allReservations}
+                                />
+                            </div>
+                        )}
+
+                        {/* リストビュー (詳細) */}
+                        {viewMode === 'list' && (
+                            <div className="h-full flex flex-col animate-fade-in bg-f3f4f6">
+                                {/* 日付ナビゲーション */}
+                                <div className="flex justify-between items-center p-3 bg-gray-50 border-b sticky top-0 z-10">
+                                    <button onClick={() => setViewMode('calendar')} className="flex items-center gap-1 px-3 py-1.5 rounded bg-white shadow text-sm font-bold text-gray-600 hover:bg-gray-100">
+                                        <IconCalendar /> カレンダー
+                                    </button>
+                                    <div className="font-bold text-lg text-gray-700">{dateDisplay}</div>
+                                    <div className="w-20"></div>
+                                </div>
+
+                                {/* 合計表示パネル */}
+                                <div className="bg-teal-50 p-4 border-b border-teal-100 shadow-inner shrink-0">
+                                    <div className="flex justify-between items-start">
+                                        <div className="flex-1 text-center border-r border-teal-200 pr-2">
+                                            <p className="text-xs text-teal-600 font-bold mb-1">心筋細胞 (密度別合計)</p>
+                                            {Object.keys(dayTotals.cellByDensity).length === 0 ? (
+                                                <p className="text-xl font-bold text-teal-800">0 <span className="text-sm">µl</span></p>
+                                            ) : (
+                                                <div className="text-sm text-teal-800 text-left inline-block w-full px-2">
+                                                    {Object.entries(dayTotals.cellByDensity).map(([density, vol]) => (
+                                                        <div key={density} className="flex justify-between gap-2 border-b border-teal-100 last:border-0 py-0.5">
+                                                            <span className="font-medium truncate text-xs" title={density}>{density}</span>
+                                                            <span className="font-bold whitespace-nowrap">{vol.toLocaleString()} µl</span>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                        <div className="flex-1 text-center pl-2 flex flex-col justify-center">
+                                            <p className="text-xs text-orange-600 font-bold mb-1">コラーゲン (合計)</p>
+                                            <p className="text-2xl font-bold text-orange-800">{dayTotals.collagen.toLocaleString()} <span className="text-sm">µl</span></p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* リスト表示エリア */}
+                                <div className="flex-1 p-3 overflow-y-auto bg-gray-50 pb-24">
+                                    {isPastDate && (
+                                        <div className="mb-4 text-center text-gray-500 bg-gray-200 p-2 rounded text-sm font-bold">
+                                            過去の日付のため編集できません
+                                        </div>
+                                    )}
+                                    {loading ? <div className="text-center py-10 text-gray-400">読み込み中...</div> : (
+                                        <div className="space-y-3">
+                                            {dayReservations.length === 0 && (
+                                                <div className="text-center py-10 text-gray-400">
+                                                    <p>まだ登録はありません</p>
+                                                    {!isPastDate && <p className="text-sm">右下のボタンから追加してください</p>}
+                                                </div>
+                                            )}
+                                            {dayReservations.map(item => {
+                                                const isMine = user && item.uid === user.uid;
+                                                return (
+                                                    <div key={item.id} className={`bg-white p-4 rounded-xl shadow-sm border-l-4 ${isMine ? 'border-blue-500' : 'border-gray-300'} animate-fade-in relative`}>
+                                                        <div className="flex justify-between items-start mb-2">
+                                                            <div>
+                                                                <span className={`font-bold text-lg ${isMine ? 'text-blue-700' : 'text-gray-800'}`}>{item.name}</span>
+                                                                {isMine && <span className="ml-2 text-[10px] bg-blue-100 text-blue-600 px-2 py-0.5 rounded-full">あなた</span>}
+                                                            </div>
+                                                            {/* 削除ボタン：過去日でない場合のみ表示 */}
+                                                            {!isPastDate && (
+                                                                <button onClick={() => handleDeleteClick(item)} className="text-gray-300 hover:text-red-500 p-1">
+                                                                    <IconTrash />
+                                                                </button>
+                                                            )}
+                                                        </div>
+                                                        <div className="grid grid-cols-2 gap-y-2 gap-x-4 text-sm">
+                                                            <div><span className="text-gray-400 text-xs block">密度 (個/ml)</span><span className="font-medium">{item.density || '-'}</span></div>
+                                                            <div></div>
+                                                            <div className="bg-teal-50 p-2 rounded"><span className="text-teal-600 text-xs block font-bold">心筋細胞</span><span className="font-bold text-lg text-teal-800">{Number(item.cellVol).toLocaleString()} µl</span></div>
+                                                            <div className="bg-orange-50 p-2 rounded"><span className="text-orange-600 text-xs block font-bold">コラーゲン</span><span className="font-bold text-lg text-orange-800">{Number(item.collagenVol).toLocaleString()} µl</span></div>
+                                                        </div>
+                                                        {item.note && <div className="mt-3 pt-2 border-t border-gray-100 text-sm text-gray-600"><span className="font-bold text-xs text-gray-400 mr-1">備考:</span>{item.note}</div>}
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* 追加ボタン (リストモード時かつ過去日でない場合のみ表示) */}
+                    {viewMode === 'list' && !isPastDate && (
+                        <button onClick={() => setIsAddModalOpen(true)} className="fixed bottom-6 right-6 w-14 h-14 bg-teal-600 text-white rounded-full shadow-lg flex items-center justify-center hover:bg-teal-700 transition active:scale-95 z-30"><IconPlus /></button>
+                    )}
+
+                    {/* --- 追加モーダル --- */}
+                    {isAddModalOpen && (
+                        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 animate-fade-in">
+                            <div className="bg-white w-full max-w-sm rounded-2xl p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
+                                <h3 className="text-xl font-bold mb-4 text-gray-800 border-b pb-2">播種データ登録</h3>
+                                <p className="text-sm text-gray-500 mb-4">{dateDisplay}</p>
+                                <div className="space-y-4">
+                                    <div><label className="block text-sm font-bold text-gray-700 mb-1">名前 (苗字)</label><input type="text" value={inputName} onChange={e => setInputName(e.target.value)} className="w-full p-2 border rounded bg-gray-50" placeholder="例: 佐藤" /></div>
+                                    <div><label className="block text-sm font-bold text-gray-700 mb-1">密度 (個/ml)</label><input type="text" value={inputDensity} onChange={e => setInputDensity(e.target.value)} className="w-full p-2 border rounded bg-gray-50" placeholder="例: 1.0e7" /></div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div><label className="block text-sm font-bold text-teal-700 mb-1">心筋細胞 (µl)</label><input type="number" value={inputCellVol} onChange={e => setInputCellVol(e.target.value)} className="w-full p-2 border border-teal-200 rounded bg-teal-50 font-bold text-right" placeholder="0" /></div>
+                                        <div><label className="block text-sm font-bold text-orange-700 mb-1">コラーゲン (µl)</label><input type="number" value={inputCollagenVol} onChange={e => setInputCollagenVol(e.target.value)} className="w-full p-2 border border-orange-200 rounded bg-orange-50 font-bold text-right" placeholder="0" /></div>
+                                    </div>
+                                    <div><label className="block text-sm font-bold text-gray-700 mb-1">備考</label><textarea value={inputNote} onChange={e => setInputNote(e.target.value)} className="w-full p-2 border rounded bg-gray-50 h-16 resize-none" placeholder="自由記述"></textarea></div>
+                                </div>
+                                <div className="flex gap-3 mt-6"><button onClick={() => setIsAddModalOpen(false)} className="flex-1 py-3 bg-gray-200 text-gray-700 font-bold rounded-lg">キャンセル</button><button onClick={handleSubmit} className="flex-1 py-3 bg-teal-600 text-white font-bold rounded-lg shadow">登録する</button></div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* --- 管理者削除モーダル --- */}
+                    {isDeleteModalOpen && (
+                        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 animate-fade-in">
+                            <div className="bg-white w-full max-w-xs rounded-2xl p-6 shadow-2xl text-center">
+                                <h3 className="text-lg font-bold text-red-600 mb-2">管理者削除</h3>
+                                <p className="text-sm text-gray-600 mb-4">他人のデータを削除するには<br/>管理者パスワードが必要です。</p>
+                                <input 
+                                    type="password" 
+                                    value={deletePassword} 
+                                    onChange={e => setDeletePassword(e.target.value)} 
+                                    className="w-full p-2 border rounded mb-4" 
+                                    placeholder="Password"
+                                />
+                                <div className="flex gap-2"><button onClick={() => setIsDeleteModalOpen(false)} className="flex-1 py-2 bg-gray-200 rounded text-sm font-bold">キャンセル</button><button onClick={handleAdminDelete} className="flex-1 py-2 bg-red-600 text-white rounded text-sm font-bold">削除</button></div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
