@@ -148,8 +148,9 @@
                 <div class="icon-grid">
                     <div class="icon-btn-simple" onclick="window.open('https://drive.google.com/drive/folders/1m0BESdl_YC1SYJv_bIpISJkM_2YOpVpn?usp=drive_link', '_blank')"><i class="fa-solid fa-book-open-reader"></i><span>LaRC基礎トレ</span></div>
                     <div class="icon-btn-simple" onclick="showPage('p-admin-ta')"><i class="fa-solid fa-users-gear"></i><span>TA向け資料</span></div>
+                    <!-- 修正：卒論/修論ルールを復活させました -->
                     <div class="icon-btn-simple" onclick="window.open('https://drive.google.com/drive/u/1/folders/1C0MbYu9U5cO83mwuMgYV6aR6Xy5CnsEv', '_blank')"><i class="fa-solid fa-graduation-cap"></i><span>卒論/修論ルール</span></div>
-                    <!-- ★追加: テーマ管理ボタン -->
+                    <!-- 追加：テーマ管理 -->
                     <div class="icon-btn-simple" onclick="window.location.href='theme_app.html'">
                         <i class="fa-solid fa-list-check"></i><span>テーマ管理<br>を開く</span>
                     </div>
@@ -259,7 +260,7 @@
              <div class="section-card color-purple">
                  <div class="cat-title">TA向け資料</div>
                  <ul class="menu-list">
-                     <li><div class="menu-btn" onclick="window.open('https://drive.google.com/drive/folders/1r0pCq4798mks_wu19glGB9mPMxxXcz0N?usp=sharing', '_blank')">基礎実験準備 <i class="fa-solid fa-chevron-right"></i></div></li>
+                     <li><div class="menu-btn" onclick="window.open('https://drive.google.com/drive/folders/1r0pCq4798mks_wu19glGB9mPMxxXcz0N?usp=sharing', '_blank')">基礎実験Ⅱ準備 <i class="fa-solid fa-chevron-right"></i></div></li>
                      <li><div class="menu-btn" onclick="window.open('https://drive.google.com/drive/folders/1sb8EctMdssIDfWBfbviTxowtvzaLmIv9?usp=sharing', '_blank')">学祭準備 <i class="fa-solid fa-chevron-right"></i></div></li>
                  </ul>
              </div>
@@ -289,7 +290,7 @@
         </div>
     </div>
 
-    <!-- ★★★ 予約システム注意書き用モーダル（追加） ★★★ -->
+    <!-- ★★★ 予約システム注意書き用モーダル ★★★ -->
     <div id="reservation-warning-modal" class="modal-overlay">
         <div class="modal-box" style="width: 450px; max-width: 95%;">
             <div class="modal-title" style="color: #c0392b; border-bottom: 2px solid #c0392b; padding-bottom: 10px;">
@@ -316,7 +317,7 @@
     <script src="manual_data.js?v=2"></script>
     <script src="script.js?v=2"></script>
 
-    <!-- ★★★ 認証ロジック & 予約警告ロジック ★★★ -->
+    <!-- 認証ロジック & 予約警告ロジック -->
     <script>
         const SITE_HASH = "d1c8ef133fe0d499fd6b15a654585d02cf5096faad3a71cc4f60ade5fa3307d4"; 
 
