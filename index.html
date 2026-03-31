@@ -1,316 +1,636 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ja">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>細胞班マニュアル</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
     <!-- キャッシュ対策 -->
-    <link rel="stylesheet" href="style.css?v=2">
+    <link rel="stylesheet" href="style.css?v=2" />
     <style>
-        /* 認証画面用のスタイル */
-        #auth-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: #2c3e50; z-index: 99999;
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
-            color: white;
-        }
-        .auth-box {
-            background: white; padding: 30px; border-radius: 12px;
-            color: #333; text-align: center; max-width: 90%; width: 350px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-        }
-        .auth-input {
-            width: 100%; padding: 12px; margin-bottom: 15px;
-            border: 2px solid #ddd; border-radius: 6px; box-sizing: border-box;
-            font-size: 1rem; outline: none;
-        }
-        .auth-input:focus { border-color: #27ae60; }
-        .auth-btn {
-            width: 100%; padding: 12px; background: #27ae60;
-            color: white; border: none; border-radius: 6px;
-            font-weight: bold; cursor: pointer; font-size: 1rem;
-            transition: 0.2s;
-        }
-        .auth-btn:hover { background: #219150; }
-        #auth-error { color: #e74c3c; margin-top: 10px; font-size: 0.9rem; display: none; font-weight: bold; }
+      /* 認証画面用のスタイル */
+      #auth-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: #2c3e50;
+        z-index: 99999;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        color: white;
+      }
+      .auth-box {
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        color: #333;
+        text-align: center;
+        max-width: 90%;
+        width: 350px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+      }
+      .auth-input {
+        width: 100%;
+        padding: 12px;
+        margin-bottom: 15px;
+        border: 2px solid #ddd;
+        border-radius: 6px;
+        box-sizing: border-box;
+        font-size: 1rem;
+        outline: none;
+      }
+      .auth-input:focus {
+        border-color: #27ae60;
+      }
+      .auth-btn {
+        width: 100%;
+        padding: 12px;
+        background: #27ae60;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        font-weight: bold;
+        cursor: pointer;
+        font-size: 1rem;
+        transition: 0.2s;
+      }
+      .auth-btn:hover {
+        background: #219150;
+      }
+      #auth-error {
+        color: #e74c3c;
+        margin-top: 10px;
+        font-size: 0.9rem;
+        display: none;
+        font-weight: bold;
+      }
 
-        /* 予約警告モーダル用の追加スタイル */
-        .warning-text-box {
-            background: #fff5f5;
-            border: 2px solid #e74c3c;
-            border-radius: 8px;
-            padding: 15px;
-            margin: 15px 0;
-            text-align: left;
-            font-size: 0.9rem;
-            line-height: 1.6;
-            color: #c0392b;
-        }
-        .warning-point {
-            font-weight: bold;
-            margin-bottom: 10px;
-            display: block;
-        }
+      /* 予約警告モーダル用の追加スタイル */
+      .warning-text-box {
+        background: #fff5f5;
+        border: 2px solid #e74c3c;
+        border-radius: 8px;
+        padding: 15px;
+        margin: 15px 0;
+        text-align: left;
+        font-size: 0.9rem;
+        line-height: 1.6;
+        color: #c0392b;
+      }
+      .warning-point {
+        font-weight: bold;
+        margin-bottom: 10px;
+        display: block;
+      }
     </style>
-</head>
-<body>
-
+  </head>
+  <body>
     <!-- ★★★ 認証画面（最初はこれで隠す） ★★★ -->
     <div id="auth-overlay">
-        <div class="auth-box">
-            <h2 style="margin-top:0; margin-bottom:5px; color:#2c3e50; font-size: 1.5rem;">細胞班マニュアル</h2>
-            <p style="font-size:0.85rem; color:#7f8c8d; margin-bottom:20px;">Internal Use Only</p>
-            
-            <p style="font-size:0.9rem; color:#666; margin-bottom:10px; text-align:left; font-weight:bold;">パスワード</p>
-            <input type="password" id="auth-pass" class="auth-input" placeholder="Password" onkeydown="if(event.key==='Enter') checkAuth()">
-            
-            <button onclick="checkAuth()" class="auth-btn">ログイン</button>
-            <p id="auth-error"><i class="fa-solid fa-circle-exclamation"></i> パスワードが違います</p>
-        </div>
+      <div class="auth-box">
+        <h2
+          style="
+            margin-top: 0;
+            margin-bottom: 5px;
+            color: #2c3e50;
+            font-size: 1.5rem;
+          "
+        >
+          細胞班マニュアル
+        </h2>
+        <p style="font-size: 0.85rem; color: #7f8c8d; margin-bottom: 20px">
+          Internal Use Only
+        </p>
+
+        <p
+          style="
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 10px;
+            text-align: left;
+            font-weight: bold;
+          "
+        >
+          パスワード
+        </p>
+        <input
+          type="password"
+          id="auth-pass"
+          class="auth-input"
+          placeholder="Password"
+          onkeydown="if (event.key === 'Enter') checkAuth();"
+        />
+
+        <button onclick="checkAuth()" class="auth-btn">ログイン</button>
+        <p id="auth-error">
+          <i class="fa-solid fa-circle-exclamation"></i> パスワードが違います
+        </p>
+      </div>
     </div>
 
     <div class="security-bar">
-        <i class="fa-solid fa-lock"></i> 【 外部流出禁止 】 (Internal Use Only)
+      <i class="fa-solid fa-lock"></i> 【 外部流出禁止 】 (Internal Use Only)
     </div>
 
     <header>
-        <h1 id="header-title">細胞班マニュアル</h1>
+      <h1 id="header-title">細胞班マニュアル</h1>
     </header>
 
     <div class="container">
+      <!-- TOPメニュー画面 -->
+      <div id="p-home" class="page active">
+        <!-- (A) 試薬 -->
+        <div class="section-card color-green">
+          <div class="cat-title">A. 試薬・物品管理</div>
+          <div class="icon-grid">
+            <div class="icon-btn-simple" onclick="showPage('p-order')">
+              <i class="fa-solid fa-cart-shopping"></i><span>発注・受取</span>
+            </div>
+            <div class="icon-btn-simple" onclick="showPage('p-reagent-list')">
+              <i class="fa-solid fa-flask"></i><span>調製</span>
+            </div>
+            <div class="icon-btn-simple" onclick="openGuide('reagent-duty')">
+              <i class="fa-solid fa-people-carry-box"></i><span>調製担当</span>
+            </div>
+          </div>
+        </div>
+        <!-- (B) 実験 -->
+        <div class="section-card color-orange">
+          <div class="cat-title">B. 実験フロー</div>
+          <div class="icon-grid">
+            <div class="icon-btn-simple" onclick="showPage('p-exp-seeding')">
+              <i class="fa-solid fa-seedling"></i><span>解剖・単離</span>
+            </div>
+            <div class="icon-btn-simple" onclick="showPage('p-exp-measure')">
+              <i class="fa-solid fa-chart-line"></i><span>培養・計測</span>
+            </div>
+            <div class="icon-btn-simple" onclick="showPage('p-exp-cleanup')">
+              <i class="fa-solid fa-trash"></i><span>片付け</span>
+            </div>
+          </div>
+        </div>
+        <!-- (C) 解析 -->
+        <div class="section-card color-blue">
+          <div class="cat-title">C. 解析・ソフト</div>
+          <div class="icon-grid">
+            <div
+              class="icon-btn-detail"
+              onclick="
+                window.open(
+                  'https://github.com/kkito0726/mea-viewer/blob/main/README.md',
+                  '_blank',
+                )
+              "
+            >
+              <i class="fa-solid fa-display"></i
+              ><span class="btn-title">MEA viewer</span
+              ><span class="btn-desc">ブラウザ上でデータ確認</span>
+            </div>
+            <div
+              class="icon-btn-detail"
+              onclick="
+                window.open(
+                  'https://github.com/kkito0726/MEA_modules/blob/main/README_ja.md',
+                  '_blank',
+                )
+              "
+            >
+              <i class="fa-brands fa-python"></i
+              ><span class="btn-title">pyMEA</span
+              ><span class="btn-desc">MEA計測データの解析</span>
+            </div>
+            <div
+              class="icon-btn-detail"
+              onclick="
+                window.open(
+                  'https://github.com/kkito0726/image-stitcher',
+                  '_blank',
+                )
+              "
+            >
+              <i class="fa-solid fa-panorama"></i
+              ><span class="btn-title">image Stitcher</span
+              ><span class="btn-desc">画像統合 (545電極など)</span>
+            </div>
+            <div
+              class="icon-btn-detail"
+              onclick="
+                window.open(
+                  'https://github.com/kkito0726/svg_converter',
+                  '_blank',
+                )
+              "
+            >
+              <i class="fa-solid fa-bezier-curve"></i
+              ><span class="btn-title">SVG Converter</span
+              ><span class="btn-desc">Inkscape→RasPi用CSV変換</span>
+            </div>
+          </div>
+        </div>
+        <!-- (D) 機器 -->
+        <div class="section-card color-red">
+          <div class="cat-title">D. 機器・安全</div>
+          <div class="icon-grid">
+            <div
+              class="icon-btn-simple"
+              onclick="
+                window.open(
+                  'https://drive.google.com/file/d/1IZRCrm5u0OWGaym-ynC9MuPXzLJDcV-0/view?usp=sharing',
+                  '_blank',
+                )
+              "
+            >
+              <i class="fa-solid fa-wind"></i><span>クリーンベンチ</span>
+            </div>
+            <div class="icon-btn-simple" onclick="showPage('p-gas-burner')">
+              <i class="fa-solid fa-fire"></i><span>ガスバーナー</span>
+            </div>
+            <div class="icon-btn-simple" onclick="showPage('p-coming-soon')">
+              <i class="fa-solid fa-temperature-high"></i
+              ><span>インキュベーター</span>
+            </div>
+            <div class="icon-btn-simple" onclick="showPage('p-autoclave')">
+              <i class="fa-solid fa-prescription-bottle"></i
+              ><span>オートクレーブ</span>
+            </div>
+            <div class="icon-btn-simple" onclick="showPage('p-coming-soon')">
+              <i class="fa-solid fa-triangle-exclamation"></i
+              ><span>コンタミ<br />対応方法</span>
+            </div>
+            <div class="icon-btn-simple" onclick="showPage('p-coming-soon')">
+              <i class="fa-solid fa-door-open"></i
+              ><span>退出時の<br />確認事項</span>
+            </div>
+          </div>
+        </div>
+        <!-- (E) 運営 -->
+        <div class="section-card color-purple">
+          <div class="cat-title">E. 運営・その他</div>
+          <div class="icon-grid">
+            <div
+              class="icon-btn-simple"
+              onclick="
+                window.open(
+                  'https://drive.google.com/drive/folders/1m0BESdl_YC1SYJv_bIpISJkM_2YOpVpn?usp=drive_link',
+                  '_blank',
+                )
+              "
+            >
+              <i class="fa-solid fa-book-open-reader"></i
+              ><span>LaRC基礎トレ</span>
+            </div>
+            <div class="icon-btn-simple" onclick="showPage('p-admin-ta')">
+              <i class="fa-solid fa-users-gear"></i><span>TA向け資料</span>
+            </div>
+            <!-- 修正：卒論/修論ルールを復活させました -->
+            <div
+              class="icon-btn-simple"
+              onclick="
+                window.open(
+                  'https://drive.google.com/drive/u/1/folders/1C0MbYu9U5cO83mwuMgYV6aR6Xy5CnsEv',
+                  '_blank',
+                )
+              "
+            >
+              <i class="fa-solid fa-graduation-cap"></i><span>卒論/修論</span>
+            </div>
+            <!-- 追加：テーマ管理 -->
+            <div
+              class="icon-btn-simple"
+              onclick="window.location.href = 'theme_app.html'"
+            >
+              <i class="fa-solid fa-list-check"></i
+              ><span>テーマ管理<br />を開く</span>
+            </div>
+          </div>
+        </div>
+        <!-- (F) 予約 -->
+        <div class="section-card color-teal">
+          <div class="cat-title">F. 予約表</div>
+          <div class="icon-grid">
+            <!-- ★MEA予約（警告モーダルを開く） -->
+            <div class="icon-btn-simple" onclick="openReservationWarning()">
+              <i class="fa-solid fa-calendar-days"></i
+              ><span>MEA予約<br />を開く</span>
+            </div>
+            <!-- ★播種量管理（新アプリを開く） -->
+            <div
+              class="icon-btn-simple"
+              onclick="window.location.href = 'seeding_app.html'"
+            >
+              <i class="fa-solid fa-flask"></i
+              ><span>播種量管理<br />を開く</span>
+            </div>
+          </div>
+        </div>
+      </div>
 
-        <!-- TOPメニュー画面 -->
-        <div id="p-home" class="page active">
-            <!-- (A) 試薬 -->
-            <div class="section-card color-green">
-                <div class="cat-title">A. 試薬・物品管理</div>
-                <div class="icon-grid">
-                    <div class="icon-btn-simple" onclick="showPage('p-order')">
-                        <i class="fa-solid fa-cart-shopping"></i><span>発注・受取</span>
-                    </div>
-                    <div class="icon-btn-simple" onclick="showPage('p-reagent-list')">
-                        <i class="fa-solid fa-flask"></i><span>調製</span>
-                    </div>
-                    <div class="icon-btn-simple" onclick="openGuide('reagent-duty')"><i class="fa-solid fa-people-carry-box"></i><span>調製担当</span></div>
-                </div>
-            </div>
-            <!-- (B) 実験 -->
-            <div class="section-card color-orange">
-                <div class="cat-title">B. 実験フロー</div>
-                <div class="icon-grid">
-                    <div class="icon-btn-simple" onclick="showPage('p-exp-seeding')">
-                        <i class="fa-solid fa-seedling"></i><span>解剖・単離</span>
-                    </div>
-                    <div class="icon-btn-simple" onclick="showPage('p-exp-measure')">
-                        <i class="fa-solid fa-chart-line"></i><span>培養・計測</span>
-                    </div>
-                    <div class="icon-btn-simple" onclick="showPage('p-exp-cleanup')">
-                        <i class="fa-solid fa-trash"></i><span>片付け</span>
-                    </div>
-                </div>
-            </div>
-            <!-- (C) 解析 -->
-            <div class="section-card color-blue">
-                <div class="cat-title">C. 解析・ソフト</div>
-                <div class="icon-grid">
-                    <div class="icon-btn-detail" onclick="window.open('https://github.com/kkito0726/mea-viewer/blob/main/README.md', '_blank')">
-                        <i class="fa-solid fa-display"></i><span class="btn-title">MEA viewer</span><span class="btn-desc">ブラウザ上でデータ確認</span>
-                    </div>
-                    <div class="icon-btn-detail" onclick="window.open('https://github.com/kkito0726/MEA_modules/blob/main/README_ja.md', '_blank')">
-                        <i class="fa-brands fa-python"></i><span class="btn-title">pyMEA</span><span class="btn-desc">MEA計測データの解析</span>
-                    </div>
-                    <div class="icon-btn-detail" onclick="window.open('https://github.com/kkito0726/image-stitcher', '_blank')">
-                        <i class="fa-solid fa-panorama"></i><span class="btn-title">image Stitcher</span><span class="btn-desc">画像統合 (545電極など)</span>
-                    </div>
-                    <div class="icon-btn-detail" onclick="window.open('https://github.com/kkito0726/svg_converter', '_blank')">
-                        <i class="fa-solid fa-bezier-curve"></i><span class="btn-title">SVG Converter</span><span class="btn-desc">Inkscape→RasPi用CSV変換</span>
-                    </div>
-                </div>
-            </div>
-            <!-- (D) 機器 -->
-            <div class="section-card color-red">
-                <div class="cat-title">D. 機器・安全</div>
-                <div class="icon-grid">
-                    <div class="icon-btn-simple" onclick="window.open('https://drive.google.com/file/d/1IZRCrm5u0OWGaym-ynC9MuPXzLJDcV-0/view?usp=sharing', '_blank')">
-                        <i class="fa-solid fa-wind"></i><span>クリーンベンチ</span>
-                    </div>
-                    <div class="icon-btn-simple" onclick="showPage('p-gas-burner')"><i class="fa-solid fa-fire"></i><span>ガスバーナー</span></div>
-                    <div class="icon-btn-simple" onclick="showPage('p-coming-soon')"><i class="fa-solid fa-temperature-high"></i><span>インキュベーター</span></div>
-                    <div class="icon-btn-simple" onclick="showPage('p-autoclave')"><i class="fa-solid fa-prescription-bottle"></i><span>オートクレーブ</span></div>
-                    <div class="icon-btn-simple" onclick="showPage('p-coming-soon')"><i class="fa-solid fa-triangle-exclamation"></i><span>コンタミ<br>対応方法</span></div>
-                    <div class="icon-btn-simple" onclick="showPage('p-coming-soon')"><i class="fa-solid fa-door-open"></i><span>退出時の<br>確認事項</span></div>
-                </div>
-            </div>
-            <!-- (E) 運営 -->
-            <div class="section-card color-purple">
-                <div class="cat-title">E. 運営・その他</div>
-                <div class="icon-grid">
-                    <div class="icon-btn-simple" onclick="window.open('https://drive.google.com/drive/folders/1m0BESdl_YC1SYJv_bIpISJkM_2YOpVpn?usp=drive_link', '_blank')"><i class="fa-solid fa-book-open-reader"></i><span>LaRC基礎トレ</span></div>
-                    <div class="icon-btn-simple" onclick="showPage('p-admin-ta')"><i class="fa-solid fa-users-gear"></i><span>TA向け資料</span></div>
-                    <!-- 修正：卒論/修論ルールを復活させました -->
-                    <div class="icon-btn-simple" onclick="window.open('https://drive.google.com/drive/u/1/folders/1C0MbYu9U5cO83mwuMgYV6aR6Xy5CnsEv', '_blank')"><i class="fa-solid fa-graduation-cap"></i><span>卒論/修論</span></div>
-                    <!-- 追加：テーマ管理 -->
-                    <div class="icon-btn-simple" onclick="window.location.href='theme_app.html'">
-                        <i class="fa-solid fa-list-check"></i><span>テーマ管理<br>を開く</span>
-                    </div>
-                </div>
-            </div>
-            <!-- (F) 予約 -->
-            <div class="section-card color-teal">
-                <div class="cat-title">F. 予約表</div>
-                <div class="icon-grid">
-                    <!-- ★MEA予約（警告モーダルを開く） -->
-                    <div class="icon-btn-simple" onclick="openReservationWarning()">
-                        <i class="fa-solid fa-calendar-days"></i><span>MEA予約<br>を開く</span>
-                    </div>
-                    <!-- ★播種量管理（新アプリを開く） -->
-                    <div class="icon-btn-simple" onclick="window.location.href='seeding_app.html'">
-                        <i class="fa-solid fa-flask"></i><span>播種量管理<br>を開く</span>
-                    </div>
-                </div>
-            </div>
+      <!-- 中間メニュー -->
+      <div id="p-order" class="page">
+        <button class="back-btn" onclick="showPage('p-home')">
+          <i class="fa-solid fa-arrow-left"></i> TOPへ戻る
+        </button>
+        <div class="section-card color-green">
+          <div class="cat-title">発注・受取</div>
+          <ul class="menu-list">
+            <li>
+              <div class="menu-btn" onclick="showPage('p-egg-receipt')">
+                卵の受取方法 <i class="fa-solid fa-chevron-right"></i>
+              </div>
+            </li>
+            <li>
+              <div class="menu-btn" onclick="showPage('p-order-method')">
+                溶液や備品の発注方法 <i class="fa-solid fa-chevron-right"></i>
+              </div>
+            </li>
+          </ul>
         </div>
-
-        <!-- 中間メニュー -->
-        <div id="p-order" class="page">
-            <button class="back-btn" onclick="showPage('p-home')"><i class="fa-solid fa-arrow-left"></i> TOPへ戻る</button>
-            <div class="section-card color-green">
-                <div class="cat-title">発注・受取</div>
-                <ul class="menu-list">
-                    <li><div class="menu-btn" onclick="showPage('p-egg-receipt')">卵の受取方法 <i class="fa-solid fa-chevron-right"></i></div></li>
-                    <li><div class="menu-btn" onclick="showPage('p-order-method')">溶液や備品の発注方法 <i class="fa-solid fa-chevron-right"></i></div></li>
-                </ul>
-            </div>
+      </div>
+      <div id="p-reagent-list" class="page">
+        <button class="back-btn" onclick="showPage('p-home')">
+          <i class="fa-solid fa-arrow-left"></i> TOPへ戻る
+        </button>
+        <div class="section-card color-green">
+          <div class="cat-title">調製：培地 (Media)</div>
+          <ul class="menu-list">
+            <li>
+              <div class="menu-btn" onclick="showPage('p-dmem-fbs')">
+                DMEM ＋ P/S ＋ FBS <i class="fa-solid fa-chevron-right"></i>
+              </div>
+            </li>
+            <li>
+              <div class="menu-btn" onclick="showPage('p-dmem-ps')">
+                DMEM ＋ P/S <i class="fa-solid fa-chevron-right"></i>
+              </div>
+            </li>
+            <li>
+              <div class="menu-btn" onclick="showPage('p-pbs')">
+                PBS (-) <i class="fa-solid fa-chevron-right"></i>
+              </div>
+            </li>
+          </ul>
         </div>
-        <div id="p-reagent-list" class="page">
-            <button class="back-btn" onclick="showPage('p-home')"><i class="fa-solid fa-arrow-left"></i> TOPへ戻る</button>
-            <div class="section-card color-green">
-                <div class="cat-title">調製：培地 (Media)</div>
-                <ul class="menu-list">
-                    <li><div class="menu-btn" onclick="showPage('p-dmem-fbs')">DMEM ＋ P/S ＋ FBS <i class="fa-solid fa-chevron-right"></i></div></li>
-                    <li><div class="menu-btn" onclick="showPage('p-dmem-ps')">DMEM ＋ P/S <i class="fa-solid fa-chevron-right"></i></div></li>
-                    <li><div class="menu-btn" onclick="showPage('p-pbs')">PBS (-) <i class="fa-solid fa-chevron-right"></i></div></li>
-                </ul>
-            </div>
-            <div class="section-card color-green">
-                <div class="cat-title">調製：試薬・その他</div>
-                <ul class="menu-list">
-                    <li><div class="menu-btn" onclick="showPage('p-ps-trypsin')">P/S または トリプシン分注 <i class="fa-solid fa-chevron-right"></i></div></li>
-                    <li><div class="menu-btn" onclick="showPage('p-fbs-inactivation')">FBS 非働化 <i class="fa-solid fa-chevron-right"></i></div></li>
-                    <li><div class="menu-btn" onclick="showPage('p-collagenase')">コラゲナーゼ <i class="fa-solid fa-chevron-right"></i></div></li>
-                    <li><div class="menu-btn" onclick="showPage('p-agarose')">アガロース <i class="fa-solid fa-chevron-right"></i></div></li>
-                    <li><div class="menu-btn" onclick="showPage('p-pei')">PEI / ホウ酸Buffer <i class="fa-solid fa-chevron-right"></i></div></li>
-                </ul>
-            </div>
+        <div class="section-card color-green">
+          <div class="cat-title">調製：試薬・その他</div>
+          <ul class="menu-list">
+            <li>
+              <div class="menu-btn" onclick="showPage('p-ps-trypsin')">
+                P/S または トリプシン分注
+                <i class="fa-solid fa-chevron-right"></i>
+              </div>
+            </li>
+            <li>
+              <div class="menu-btn" onclick="showPage('p-fbs-inactivation')">
+                FBS 非働化 <i class="fa-solid fa-chevron-right"></i>
+              </div>
+            </li>
+            <li>
+              <div class="menu-btn" onclick="showPage('p-collagenase')">
+                コラゲナーゼ <i class="fa-solid fa-chevron-right"></i>
+              </div>
+            </li>
+            <li>
+              <div class="menu-btn" onclick="showPage('p-agarose')">
+                アガロース <i class="fa-solid fa-chevron-right"></i>
+              </div>
+            </li>
+            <li>
+              <div class="menu-btn" onclick="showPage('p-pei')">
+                PEI / ホウ酸Buffer <i class="fa-solid fa-chevron-right"></i>
+              </div>
+            </li>
+          </ul>
         </div>
-        <div id="p-exp-seeding" class="page">
-            <button class="back-btn" onclick="showPage('p-home')"><i class="fa-solid fa-arrow-left"></i> TOPへ戻る</button>
-            <div class="section-card color-orange">
-                <div class="cat-title">MEA dishの準備</div>
-                <ul class="menu-list">
-                    <li><div class="menu-btn" onclick="showPage('p-new-mea')">新MEA開封 <i class="fa-solid fa-chevron-right"></i></div></li>
-                    <li><div class="menu-btn" onclick="showPage('p-plasma')">プラズマ処理 <i class="fa-solid fa-chevron-right"></i></div></li>
-                    <li><div class="menu-btn" onclick="showPage('p-amc-menu')">AMC加工 <i class="fa-solid fa-chevron-right"></i></div></li>
-                    <li><div class="menu-btn" onclick="showPage('p-collagen')">コラーゲン調製・播種 <i class="fa-solid fa-chevron-right"></i></div></li>
-                </ul>
-            </div>
-            <div class="section-card color-orange">
-                <div class="cat-title">心筋細胞の単離</div>
-                <ul class="menu-list">
-                    <li><div class="menu-btn" onclick="showPage('p-isolation-prep')">準備 <i class="fa-solid fa-chevron-right"></i></div></li>
-                    <li><div class="menu-btn" onclick="showPage('p-isolation-work')">解剖・単離手順 <i class="fa-solid fa-chevron-right"></i></div></li>
-                    <li><div class="menu-btn" onclick="showPage('p-cleanup-tools')">機器・器具の洗浄 <i class="fa-solid fa-chevron-right"></i></div></li>
-                </ul>
-            </div>
+      </div>
+      <div id="p-exp-seeding" class="page">
+        <button class="back-btn" onclick="showPage('p-home')">
+          <i class="fa-solid fa-arrow-left"></i> TOPへ戻る
+        </button>
+        <div class="section-card color-orange">
+          <div class="cat-title">MEA dishの準備</div>
+          <ul class="menu-list">
+            <li>
+              <div class="menu-btn" onclick="showPage('p-new-mea')">
+                新MEA開封 <i class="fa-solid fa-chevron-right"></i>
+              </div>
+            </li>
+            <li>
+              <div class="menu-btn" onclick="showPage('p-plasma')">
+                プラズマ処理 <i class="fa-solid fa-chevron-right"></i>
+              </div>
+            </li>
+            <li>
+              <div class="menu-btn" onclick="showPage('p-amc-menu')">
+                AMC加工 <i class="fa-solid fa-chevron-right"></i>
+              </div>
+            </li>
+            <li>
+              <div class="menu-btn" onclick="showPage('p-collagen')">
+                コラーゲン調製・播種 <i class="fa-solid fa-chevron-right"></i>
+              </div>
+            </li>
+          </ul>
         </div>
-        <div id="p-amc-menu" class="page">
-            <button class="back-btn" onclick="showPage('p-exp-seeding')"><i class="fa-solid fa-arrow-left"></i> 播種メニューへ戻る</button>
-            <div class="section-card color-orange">
-                <div class="cat-title">AMC加工メニュー</div>
-                <ul class="menu-list">
-                    <li><div class="menu-btn" onclick="showPage('p-amc-coating')">1. アガロースコート <i class="fa-solid fa-chevron-right"></i></div></li>
-                    <li><div class="menu-btn" onclick="showPage('p-amc-laser')">2. レーザー加工 <i class="fa-solid fa-chevron-right"></i></div></li>
-                </ul>
-            </div>
+        <div class="section-card color-orange">
+          <div class="cat-title">心筋細胞の単離</div>
+          <ul class="menu-list">
+            <li>
+              <div class="menu-btn" onclick="showPage('p-isolation-prep')">
+                準備 <i class="fa-solid fa-chevron-right"></i>
+              </div>
+            </li>
+            <li>
+              <div class="menu-btn" onclick="showPage('p-isolation-work')">
+                解剖・単離手順 <i class="fa-solid fa-chevron-right"></i>
+              </div>
+            </li>
+            <li>
+              <div class="menu-btn" onclick="showPage('p-cleanup-tools')">
+                機器・器具の洗浄 <i class="fa-solid fa-chevron-right"></i>
+              </div>
+            </li>
+          </ul>
         </div>
-        <div id="p-exp-measure" class="page">
-            <button class="back-btn" onclick="showPage('p-home')"><i class="fa-solid fa-arrow-left"></i> TOPへ戻る</button>
-            <div class="section-card color-orange">
-                <div class="cat-title">培養・計測</div>
-                <ul class="menu-list">
-                    <li><div class="menu-btn" onclick="showPage('p-mea-measurement')">MEA計測 <i class="fa-solid fa-chevron-right"></i></div></li>
-                    <li><div class="menu-btn" onclick="window.open('https://drive.google.com/file/d/1ldC2vfBFAZ_5h8NMRc_v0tRhNLkJdlMJ/view?usp=sharing', '_blank')">カルシウムイメージング <i class="fa-solid fa-chevron-right"></i></div></li>
-                    <li><div class="menu-btn" onclick="showPage('p-laser-irradiation')">レーザー照射 <i class="fa-solid fa-chevron-right"></i></div></li>
-                    <li><div class="menu-btn" onclick="showPage('p-coming-soon')">細胞染色 <i class="fa-solid fa-chevron-right"></i></div></li>
-                </ul>
-            </div>
+      </div>
+      <div id="p-amc-menu" class="page">
+        <button class="back-btn" onclick="showPage('p-exp-seeding')">
+          <i class="fa-solid fa-arrow-left"></i> 播種メニューへ戻る
+        </button>
+        <div class="section-card color-orange">
+          <div class="cat-title">AMC加工メニュー</div>
+          <ul class="menu-list">
+            <li>
+              <div class="menu-btn" onclick="showPage('p-amc-coating')">
+                1. アガロースコート <i class="fa-solid fa-chevron-right"></i>
+              </div>
+            </li>
+            <li>
+              <div class="menu-btn" onclick="showPage('p-amc-laser')">
+                2. レーザー加工 <i class="fa-solid fa-chevron-right"></i>
+              </div>
+            </li>
+          </ul>
         </div>
-        <div id="p-exp-cleanup" class="page">
-            <button class="back-btn" onclick="showPage('p-home')"><i class="fa-solid fa-arrow-left"></i> TOPへ戻る</button>
-            <div class="section-card color-orange">
-                <div class="cat-title">片付け・実験終了</div>
-                <ul class="menu-list">
-                    <li><div class="menu-btn" onclick="showPage('p-trypsin-mea')">MEA洗浄 (トリプシン) <i class="fa-solid fa-chevron-right"></i></div></li>
-                </ul>
-            </div>
+      </div>
+      <div id="p-exp-measure" class="page">
+        <button class="back-btn" onclick="showPage('p-home')">
+          <i class="fa-solid fa-arrow-left"></i> TOPへ戻る
+        </button>
+        <div class="section-card color-orange">
+          <div class="cat-title">培養・計測</div>
+          <ul class="menu-list">
+            <li>
+              <div class="menu-btn" onclick="showPage('p-mea-measurement')">
+                MEA計測 <i class="fa-solid fa-chevron-right"></i>
+              </div>
+            </li>
+            <li>
+              <div
+                class="menu-btn"
+                onclick="
+                  window.open(
+                    'https://drive.google.com/file/d/1ldC2vfBFAZ_5h8NMRc_v0tRhNLkJdlMJ/view?usp=sharing',
+                    '_blank',
+                  )
+                "
+              >
+                カルシウムイメージング <i class="fa-solid fa-chevron-right"></i>
+              </div>
+            </li>
+            <li>
+              <div class="menu-btn" onclick="showPage('p-laser-irradiation')">
+                レーザー照射 <i class="fa-solid fa-chevron-right"></i>
+              </div>
+            </li>
+            <li>
+              <div class="menu-btn" onclick="showPage('p-coming-soon')">
+                細胞染色 <i class="fa-solid fa-chevron-right"></i>
+              </div>
+            </li>
+          </ul>
         </div>
-        <div id="p-admin-ta" class="page">
-             <button class="back-btn" onclick="showPage('p-home')"><i class="fa-solid fa-arrow-left"></i> TOPへ戻る</button>
-             <div class="section-card color-purple">
-                 <div class="cat-title">TA向け資料</div>
-                 <ul class="menu-list">
-                     <li><div class="menu-btn" onclick="window.open('https://drive.google.com/drive/folders/1r0pCq4798mks_wu19glGB9mPMxxXcz0N?usp=sharing', '_blank')">基礎実験Ⅱ準備 <i class="fa-solid fa-chevron-right"></i></div></li>
-                     <li><div class="menu-btn" onclick="window.open('https://drive.google.com/drive/folders/1sb8EctMdssIDfWBfbviTxowtvzaLmIv9?usp=sharing', '_blank')">学祭準備 <i class="fa-solid fa-chevron-right"></i></div></li>
-                 </ul>
-             </div>
+      </div>
+      <div id="p-exp-cleanup" class="page">
+        <button class="back-btn" onclick="showPage('p-home')">
+          <i class="fa-solid fa-arrow-left"></i> TOPへ戻る
+        </button>
+        <div class="section-card color-orange">
+          <div class="cat-title">片付け・実験終了</div>
+          <ul class="menu-list">
+            <li>
+              <div class="menu-btn" onclick="showPage('p-trypsin-mea')">
+                MEA洗浄 (トリプシン) <i class="fa-solid fa-chevron-right"></i>
+              </div>
+            </li>
+          </ul>
         </div>
-        <div id="p-coming-soon" class="page">
-            <button class="back-btn" onclick="showPage('p-home')"><i class="fa-solid fa-arrow-left"></i> TOPへ戻る</button>
-            <div class="section-card">
-                <div class="coming-soon">
-                    <i class="fa-solid fa-person-digging"></i>
-                    <h2>この項目は準備中です</h2>
-                    <p>コンテンツの追加をお待ちください。</p>
-                </div>
-            </div>
+      </div>
+      <div id="p-admin-ta" class="page">
+        <button class="back-btn" onclick="showPage('p-home')">
+          <i class="fa-solid fa-arrow-left"></i> TOPへ戻る
+        </button>
+        <div class="section-card color-purple">
+          <div class="cat-title">TA向け資料</div>
+          <ul class="menu-list">
+            <li>
+              <div
+                class="menu-btn"
+                onclick="
+                  window.open(
+                    'https://drive.google.com/drive/folders/1r0pCq4798mks_wu19glGB9mPMxxXcz0N?usp=sharing',
+                    '_blank',
+                  )
+                "
+              >
+                基礎実験Ⅱ準備 <i class="fa-solid fa-chevron-right"></i>
+              </div>
+            </li>
+            <li>
+              <div
+                class="menu-btn"
+                onclick="
+                  window.open(
+                    'https://drive.google.com/drive/folders/1sb8EctMdssIDfWBfbviTxowtvzaLmIv9?usp=sharing',
+                    '_blank',
+                  )
+                "
+              >
+                学祭準備 <i class="fa-solid fa-chevron-right"></i>
+              </div>
+            </li>
+          </ul>
         </div>
-
+      </div>
+      <div id="p-coming-soon" class="page">
+        <button class="back-btn" onclick="showPage('p-home')">
+          <i class="fa-solid fa-arrow-left"></i> TOPへ戻る
+        </button>
+        <div class="section-card">
+          <div class="coming-soon">
+            <i class="fa-solid fa-person-digging"></i>
+            <h2>この項目は準備中です</h2>
+            <p>コンテンツの追加をお待ちください。</p>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- ガイド用モーダル -->
     <div id="guide-modal" class="modal-overlay">
-        <div class="modal-box">
-            <div id="modal-title" class="modal-title">使い方の説明</div>
-            <div id="modal-text" class="modal-text"></div>
-            <div class="modal-actions">
-                <button class="btn-cancel" onclick="closeGuide()">キャンセル</button>
-                <a id="modal-link" href="#" target="_blank" class="btn-go">シートを開く</a>
-            </div>
+      <div class="modal-box">
+        <div id="modal-title" class="modal-title">使い方の説明</div>
+        <div id="modal-text" class="modal-text"></div>
+        <div class="modal-actions">
+          <button class="btn-cancel" onclick="closeGuide()">キャンセル</button>
+          <a id="modal-link" href="#" target="_blank" class="btn-go"
+            >シートを開く</a
+          >
         </div>
+      </div>
     </div>
 
     <!-- ★★★ 予約システム注意書き用モーダル ★★★ -->
     <div id="reservation-warning-modal" class="modal-overlay">
-        <div class="modal-box" style="width: 450px; max-width: 95%;">
-            <div class="modal-title" style="color: #c0392b; border-bottom: 2px solid #c0392b; padding-bottom: 10px;">
-                <i class="fa-solid fa-triangle-exclamation"></i> 予約ルール確認
-            </div>
-            <div class="warning-text-box">
-                <span class="warning-point">先着順ではない！</span>
-                希望日程が被った場合、譲り合うこと<br>
-                （予約は毎月25日開始）<br><br>
-                <span class="warning-point">10分ルール</span>
-                開始10分を過ぎても、予約者が来ない場合、<br>
-                予約していない人が使ってOK！<br>
-                （ただし、予約者優先とするので<br>
-                　上手くやってね。）
-            </div>
-            <div class="modal-actions">
-                <button class="btn-cancel" onclick="closeReservationWarning()">戻る</button>
-                <button class="btn-go" onclick="window.location.href='reservation_app.html'">同意してシステムを開く</button>
-            </div>
+      <div class="modal-box" style="width: 450px; max-width: 95%">
+        <div
+          class="modal-title"
+          style="
+            color: #c0392b;
+            border-bottom: 2px solid #c0392b;
+            padding-bottom: 10px;
+          "
+        >
+          <i class="fa-solid fa-triangle-exclamation"></i> 予約ルール確認
         </div>
+        <div class="warning-text-box">
+          <span class="warning-point">先着順ではない！</span>
+          希望日程が被った場合、譲り合うこと<br />
+          （予約は毎月25日開始）<br /><br />
+          <span class="warning-point">10分ルール</span>
+          開始10分を過ぎても、予約者が来ない場合、<br />
+          予約していない人が使ってOK！<br />
+          （ただし、予約者優先とするので<br />
+          　上手くやってね。）
+        </div>
+        <div class="modal-actions">
+          <button class="btn-cancel" onclick="closeReservationWarning()">
+            戻る
+          </button>
+          <button
+            class="btn-go"
+            onclick="window.location.href = 'reservation_app.html'"
+          >
+            同意してシステムを開く
+          </button>
+        </div>
+      </div>
     </div>
 
     <!-- ファイル分割なしバージョン -->
@@ -319,43 +639,48 @@
 
     <!-- 認証ロジック & 予約警告ロジック -->
     <script>
-        const SITE_HASH = "d1c8ef133fe0d499fd6b15a654585d02cf5096faad3a71cc4f60ade5fa3307d4"; 
+      const SITE_HASH =
+        "d1c8ef133fe0d499fd6b15a654585d02cf5096faad3a71cc4f60ade5fa3307d4";
 
-        async function sha256(text) {
-            const uint8 = new TextEncoder().encode(text);
-            const digest = await crypto.subtle.digest('SHA-256', uint8);
-            return Array.from(new Uint8Array(digest)).map(b => b.toString(16).padStart(2, '0')).join('');
+      async function sha256(text) {
+        const uint8 = new TextEncoder().encode(text);
+        const digest = await crypto.subtle.digest("SHA-256", uint8);
+        return Array.from(new Uint8Array(digest))
+          .map((b) => b.toString(16).padStart(2, "0"))
+          .join("");
+      }
+
+      async function checkAuth() {
+        const input = document.getElementById("auth-pass").value;
+        const errorMsg = document.getElementById("auth-error");
+        const inputHash = await sha256(input);
+
+        if (inputHash === SITE_HASH) {
+          localStorage.setItem("site_auth_token", inputHash);
+          document.getElementById("auth-overlay").style.display = "none";
+        } else {
+          errorMsg.style.display = "block";
         }
+      }
 
-        async function checkAuth() {
-            const input = document.getElementById('auth-pass').value;
-            const errorMsg = document.getElementById('auth-error');
-            const inputHash = await sha256(input);
-
-            if (inputHash === SITE_HASH) {
-                localStorage.setItem('site_auth_token', inputHash);
-                document.getElementById('auth-overlay').style.display = 'none';
-            } else {
-                errorMsg.style.display = 'block';
-            }
+      window.addEventListener("DOMContentLoaded", () => {
+        const token = localStorage.getItem("site_auth_token");
+        if (token === SITE_HASH) {
+          document.getElementById("auth-overlay").style.display = "none";
         }
+      });
 
-        window.addEventListener('DOMContentLoaded', () => {
-            const token = localStorage.getItem('site_auth_token');
-            if (token === SITE_HASH) {
-                document.getElementById('auth-overlay').style.display = 'none';
-            }
-        });
-
-        // 予約警告モーダルの制御
-        function openReservationWarning() {
-            document.getElementById('reservation-warning-modal').classList.add('active');
-        }
-        function closeReservationWarning() {
-            document.getElementById('reservation-warning-modal').classList.remove('active');
-        }
+      // 予約警告モーダルの制御
+      function openReservationWarning() {
+        document
+          .getElementById("reservation-warning-modal")
+          .classList.add("active");
+      }
+      function closeReservationWarning() {
+        document
+          .getElementById("reservation-warning-modal")
+          .classList.remove("active");
+      }
     </script>
-
-</body>
+  </body>
 </html>
-
