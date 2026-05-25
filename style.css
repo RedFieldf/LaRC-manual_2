@@ -419,6 +419,16 @@ header h1 {
   border-color: #8e44ad;
 }
 
+.color-red .icon-btn-detail {
+  background: #fdedec;
+  border-color: #fadbd8;
+  color: #c0392b;
+}
+.color-red .icon-btn-detail:hover {
+  background: #c0392b;
+  border-color: #c0392b;
+}
+
 .color-teal .cat-title {
   color: #16a085;
   border-color: #16a085;
