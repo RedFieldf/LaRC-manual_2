@@ -35,7 +35,7 @@ const { useState, useEffect, useMemo } = React;
       }
 
       // --- アイコン ---
-      const IconArrowLeft = (_props: any) => (
+      const IconArrowLeft = () => (
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="20"
@@ -51,7 +51,7 @@ const { useState, useEffect, useMemo } = React;
           <polyline points="12 19 5 12 12 5"></polyline>
         </svg>
       );
-      const IconArrowRight = (_props: any) => (
+      const IconArrowRight = () => (
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="20"
@@ -67,7 +67,7 @@ const { useState, useEffect, useMemo } = React;
           <polyline points="12 5 19 12 12 19"></polyline>
         </svg>
       );
-      const IconBack = (_props: any) => (
+      const IconBack = () => (
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="20"
@@ -82,7 +82,7 @@ const { useState, useEffect, useMemo } = React;
           <path d="M15 18l-6-6 6-6" />
         </svg>
       );
-      const IconPlus = (_props: any) => (
+      const IconPlus = () => (
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="24"
@@ -98,7 +98,7 @@ const { useState, useEffect, useMemo } = React;
           <line x1="5" y1="12" x2="19" y2="12"></line>
         </svg>
       );
-      const IconTrash = (_props: any) => (
+      const IconTrash = () => (
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="16"
@@ -114,7 +114,7 @@ const { useState, useEffect, useMemo } = React;
           <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
         </svg>
       );
-      const IconCalendar = (_props: any) => (
+      const IconCalendar = () => (
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="20"
