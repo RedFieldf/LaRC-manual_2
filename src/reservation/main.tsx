@@ -51,7 +51,7 @@ const { useState, useEffect, useMemo } = React;
       ];
 
       // アイコン (省略)
-      const IconCalendar = () => (
+      const IconCalendar = (_props: any) => (
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="20"
@@ -69,7 +69,7 @@ const { useState, useEffect, useMemo } = React;
           <line x1="3" y1="10" x2="21" y2="10"></line>
         </svg>
       );
-      const IconUser = () => (
+      const IconUser = (_props: any) => (
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="16"
@@ -85,7 +85,7 @@ const { useState, useEffect, useMemo } = React;
           <circle cx="12" cy="7" r="4"></circle>
         </svg>
       );
-      const IconTrash = () => (
+      const IconTrash = (_props: any) => (
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="16"
@@ -101,7 +101,7 @@ const { useState, useEffect, useMemo } = React;
           <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
         </svg>
       );
-      const IconArrowLeft = () => (
+      const IconArrowLeft = (_props: any) => (
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="20"
@@ -117,7 +117,7 @@ const { useState, useEffect, useMemo } = React;
           <polyline points="12 19 5 12 12 5"></polyline>
         </svg>
       );
-      const IconArrowRight = () => (
+      const IconArrowRight = (_props: any) => (
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="20"
@@ -133,7 +133,7 @@ const { useState, useEffect, useMemo } = React;
           <polyline points="12 5 19 12 12 19"></polyline>
         </svg>
       );
-      const IconBack = () => (
+      const IconBack = (_props: any) => (
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="20"
@@ -148,7 +148,7 @@ const { useState, useEffect, useMemo } = React;
           <path d="M15 18l-6-6 6-6" />
         </svg>
       );
-      const IconLaser = () => (
+      const IconLaser = (_props: any) => (
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="14"
@@ -163,7 +163,7 @@ const { useState, useEffect, useMemo } = React;
           <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
         </svg>
       );
-      const IconNote = () => (
+      const IconNote = (_props: any) => (
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="14"
@@ -182,7 +182,7 @@ const { useState, useEffect, useMemo } = React;
           <polyline points="10 9 9 9 8 9"></polyline>
         </svg>
       );
-      const IconLock = () => (
+      const IconLock = (_props: any) => (
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="16"
@@ -198,7 +198,7 @@ const { useState, useEffect, useMemo } = React;
           <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
         </svg>
       );
-      const IconInfo = () => (
+      const IconInfo = (_props: any) => (
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="16"
@@ -215,7 +215,7 @@ const { useState, useEffect, useMemo } = React;
           <line x1="12" y1="8" x2="12.01" y2="8"></line>
         </svg>
       );
-      const IconWifiOff = () => (
+      const IconWifiOff = (_props: any) => (
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="16"
@@ -550,7 +550,7 @@ const { useState, useEffect, useMemo } = React;
           localStorage.setItem("my_name", inputName);
           const { collection, addDoc } = window.firebaseModules;
           const dateStr = selectedDate.toISOString().split("T")[0];
-          const saveData = {
+          const saveData: Record<string, any> = {
             date: dateStr,
             resourceId: selectedResource,
             time: targetSlot.id,
