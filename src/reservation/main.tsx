@@ -21,11 +21,36 @@ window.firebaseModules = { initializeApp, getAuth, signInAnonymously, onAuthStat
 // ---- 以下、元の <script type="text/babel"> の内容（ロジック変更なし） ----
 const { useState, useEffect, useMemo } = React;
 
+      // ---- ドメイン型 ----
+      interface Reservation {
+        id: string;
+        date: string;
+        resourceId: string;
+        time: string;
+        name: string;
+        note?: string;
+        uid: string;
+        createdAt: string;
+        purpose?: string;
+        wavelength?: string;
+      }
+      interface TimeSlot {
+        id: string;
+        label: string;
+      }
+      interface AuthUser {
+        uid: string;
+      }
+      interface BookingStatus {
+        allowed: boolean;
+        reason?: string;
+      }
+
       // 管理者パスワード
       const ADMIN_HASH =
         "0ee90d89ff7e29bd4950bab53abba1cfd82ff2edd27151e48725b614f1b21643";
 
-      async function sha256(text) {
+      async function sha256(text: string) {
         const uint8 = new TextEncoder().encode(text);
         const digest = await crypto.subtle.digest("SHA-256", uint8);
         return Array.from(new Uint8Array(digest))
@@ -33,8 +58,8 @@ const { useState, useEffect, useMemo } = React;
           .join("");
       }
 
-      const generateTimeSlots = () => {
-        const slots = [];
+      const generateTimeSlots = (): TimeSlot[] => {
+        const slots: TimeSlot[] = [];
         for (let h = 8; h <= 22; h++) {
           const hourId = h.toString().padStart(2, "0");
           const nextHour = h + 1;
@@ -237,7 +262,7 @@ const { useState, useEffect, useMemo } = React;
         </svg>
       );
 
-      const isBookingAllowed = (targetDate) => {
+      const isBookingAllowed = (targetDate: Date): BookingStatus => {
         const now = new Date();
         const today = new Date(
           now.getFullYear(),
@@ -275,16 +300,21 @@ const { useState, useEffect, useMemo } = React;
         onChangeDate,
         onSelectDate,
         reservations,
+      }: {
+        selectedDate: Date;
+        onChangeDate: (date: Date) => void;
+        onSelectDate: (date: Date) => void;
+        reservations: Reservation[];
       }) {
         const year = selectedDate.getFullYear();
         const month = selectedDate.getMonth();
         const firstDay = new Date(year, month, 1);
         const lastDay = new Date(year, month + 1, 0);
-        const days = [];
+        const days: (Date | null)[] = [];
         for (let i = 0; i < firstDay.getDay(); i++) days.push(null);
         for (let d = 1; d <= lastDay.getDate(); d++)
           days.push(new Date(year, month, d));
-        const changeMonth = (diff) => {
+        const changeMonth = (diff: number) => {
           const newDate = new Date(selectedDate);
           newDate.setMonth(newDate.getMonth() + diff);
           onChangeDate(newDate);
@@ -372,26 +402,32 @@ const { useState, useEffect, useMemo } = React;
       }
 
       function App() {
-        const [user, setUser] = useState(null);
-        const [db, setDb] = useState(null);
-        const [appId, setAppId] = useState(null);
+        const [user, setUser] = useState<AuthUser | null>(null);
+        const [db, setDb] = useState<any>(null);
+        const [appId, setAppId] = useState<string | null>(null);
         const [viewMode, setViewMode] = useState("calendar");
         const [selectedDate, setSelectedDate] = useState(new Date());
         const [selectedResource, setSelectedResource] = useState(
           RESOURCES[0].id,
         );
-        const [allReservations, setAllReservations] = useState([]);
+        const [allReservations, setAllReservations] = useState<Reservation[]>(
+          [],
+        );
         const [status, setStatus] = useState("initializing"); // initializing, loading, ready, error
-        const [authError, setAuthError] = useState(null);
+        const [authError, setAuthError] = useState<{ message?: string } | null>(
+          null,
+        );
         const [sdkError, setSdkError] = useState(false);
         const [dbError, setDbError] = useState(false);
 
         const [isModalOpen, setIsModalOpen] = useState(false);
         const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-        const [deleteTarget, setDeleteTarget] = useState(null);
+        const [deleteTarget, setDeleteTarget] = useState<Reservation | null>(
+          null,
+        );
         const [deletePassword, setDeletePassword] = useState("");
         const [deleteError, setDeleteError] = useState("");
-        const [targetSlot, setTargetSlot] = useState(null);
+        const [targetSlot, setTargetSlot] = useState<TimeSlot | null>(null);
         const [inputName, setInputName] = useState("");
         const [inputNote, setInputNote] = useState("");
         const [inputPurpose, setInputPurpose] = useState("mea");
@@ -429,12 +465,12 @@ const { useState, useEffect, useMemo } = React;
               await signInAnonymously(auth);
             } catch (e) {
               console.error("Auth Error:", e);
-              setAuthError(e);
+              setAuthError(e as { message?: string });
               setStatus("error");
               return;
             }
 
-            onAuthStateChanged(auth, (u) => {
+            onAuthStateChanged(auth, (u: AuthUser | null) => {
               if (u) {
                 setUser(u);
                 const savedName = localStorage.getItem("my_name");
@@ -483,17 +519,17 @@ const { useState, useEffect, useMemo } = React;
 
           const unsubscribe = onSnapshot(
             reservationsRef,
-            (snapshot) => {
+            (snapshot: any) => {
               clearTimeout(timeoutId);
-              const data = snapshot.docs.map((doc) => ({
+              const data = snapshot.docs.map((doc: any) => ({
                 id: doc.id,
                 ...doc.data(),
-              }));
+              })) as Reservation[];
               setAllReservations(data);
               setStatus("ready");
               setDbError(false);
             },
-            (error) => {
+            (error: any) => {
               clearTimeout(timeoutId);
               console.error("DB Error:", error);
               // 権限エラーなど
@@ -520,7 +556,7 @@ const { useState, useEffect, useMemo } = React;
           );
         }, [allReservations, selectedResource]);
 
-        const handleSlotClick = (slot) => {
+        const handleSlotClick = (slot: TimeSlot) => {
           const status = isBookingAllowed(selectedDate);
           const existing = currentReservations.find((r) => r.time === slot.id);
           if (existing) {
@@ -547,10 +583,11 @@ const { useState, useEffect, useMemo } = React;
             alert("名前（苗字）を入力してください");
             return;
           }
+          if (!targetSlot || !user) return;
           localStorage.setItem("my_name", inputName);
           const { collection, addDoc } = window.firebaseModules;
           const dateStr = selectedDate.toISOString().split("T")[0];
-          const saveData: Record<string, any> = {
+          const saveData: Record<string, string> = {
             date: dateStr,
             resourceId: selectedResource,
             time: targetSlot.id,
@@ -582,6 +619,7 @@ const { useState, useEffect, useMemo } = React;
         };
 
         const executeDelete = async () => {
+          if (!deleteTarget || !user) return;
           if (deleteTarget.uid !== user.uid) {
             const hash = await sha256(deletePassword);
             if (hash !== ADMIN_HASH) {
@@ -846,7 +884,7 @@ const { useState, useEffect, useMemo } = React;
                   </h3>
                   <p className="text-sm text-gray-500 mb-4 pb-2 border-b">
                     {dateDisplay} -{" "}
-                    {RESOURCES.find((r) => r.id === selectedResource).name}
+                    {RESOURCES.find((r) => r.id === selectedResource)?.name}
                   </p>
                   <div className="mb-4">
                     <label className="block text-sm font-bold text-gray-700 mb-1">
@@ -1055,5 +1093,5 @@ const { useState, useEffect, useMemo } = React;
         );
       }
 
-      const root = ReactDOM.createRoot(document.getElementById("root"));
+      const root = ReactDOM.createRoot(document.getElementById("root")!);
       root.render(<App />);
