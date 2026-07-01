@@ -23,10 +23,26 @@ window.appId = "cell-manual-reservation";
 // ---- 以下、元の <script type="text/babel"> の内容（ロジック変更なし） ----
 const { useState, useEffect, useMemo } = React;
 
+      // ---- ドメイン型 ----
+      interface SeedingRecord {
+        id: string;
+        date: string;
+        name: string;
+        density?: string;
+        cellVol: number;
+        collagenVol: number;
+        note?: string;
+        uid: string;
+        createdAt: string;
+      }
+      interface AuthUser {
+        uid: string;
+      }
+
       const ADMIN_HASH =
         "d1c8ef133fe0d499fd6b15a654585d02cf5096faad3a71cc4f60ade5fa3307d4";
 
-      async function sha256(text) {
+      async function sha256(text: string) {
         const uint8 = new TextEncoder().encode(text);
         const digest = await crypto.subtle.digest("SHA-256", uint8);
         return Array.from(new Uint8Array(digest))
@@ -139,18 +155,23 @@ const { useState, useEffect, useMemo } = React;
         onChangeDate,
         onSelectDate,
         allReservations,
+      }: {
+        selectedDate: Date;
+        onChangeDate: (date: Date) => void;
+        onSelectDate: (date: Date) => void;
+        allReservations: SeedingRecord[];
       }) {
         const year = selectedDate.getFullYear();
         const month = selectedDate.getMonth();
         const firstDay = new Date(year, month, 1);
         const lastDay = new Date(year, month + 1, 0);
 
-        const days = [];
+        const days: (Date | null)[] = [];
         for (let i = 0; i < firstDay.getDay(); i++) days.push(null);
         for (let d = 1; d <= lastDay.getDate(); d++)
           days.push(new Date(year, month, d));
 
-        const changeMonth = (diff) => {
+        const changeMonth = (diff: number) => {
           const newDate = new Date(selectedDate);
           newDate.setMonth(newDate.getMonth() + diff);
           onChangeDate(newDate);
@@ -269,16 +290,20 @@ const { useState, useEffect, useMemo } = React;
 
       // --- App Component ---
       function App() {
-        const [user, setUser] = useState(null);
+        const [user, setUser] = useState<AuthUser | null>(null);
         const [viewMode, setViewMode] = useState("calendar");
         const [selectedDate, setSelectedDate] = useState(new Date());
-        const [allReservations, setAllReservations] = useState([]); // 全データ保持
+        const [allReservations, setAllReservations] = useState<SeedingRecord[]>(
+          [],
+        ); // 全データ保持
         const [loading, setLoading] = useState(true);
 
         // モーダル関連
         const [isAddModalOpen, setIsAddModalOpen] = useState(false);
         const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-        const [deleteTarget, setDeleteTarget] = useState(null);
+        const [deleteTarget, setDeleteTarget] = useState<SeedingRecord | null>(
+          null,
+        );
         const [deletePassword, setDeletePassword] = useState("");
 
         // 入力フォーム
@@ -301,11 +326,13 @@ const { useState, useEffect, useMemo } = React;
         useEffect(() => {
           const { signInAnonymously, onAuthStateChanged } =
             window.firebaseModules;
-          signInAnonymously(window.auth).catch((e) =>
+          signInAnonymously(window.auth).catch((e: any) =>
             console.error("Auth Error:", e),
           );
 
-          const unsubscribe = onAuthStateChanged(window.auth, (u) => {
+          const unsubscribe = onAuthStateChanged(
+            window.auth,
+            (u: AuthUser | null) => {
             setUser(u);
             if (u) {
               const savedName = localStorage.getItem("my_name_seeding");
@@ -336,15 +363,15 @@ const { useState, useEffect, useMemo } = React;
 
           const unsubscribe = onSnapshot(
             q,
-            (snapshot) => {
-              const data = snapshot.docs.map((doc) => ({
+            (snapshot: any) => {
+              const data = snapshot.docs.map((doc: any) => ({
                 id: doc.id,
                 ...doc.data(),
-              }));
+              })) as SeedingRecord[];
               setAllReservations(data);
               setLoading(false);
             },
-            (error) => {
+            (error: any) => {
               console.error("DB Error:", error);
               setLoading(false);
             },
@@ -377,16 +404,10 @@ const { useState, useEffect, useMemo } = React;
 
               return acc;
             },
-            { cellByDensity: {}, collagen: 0 },
+            { cellByDensity: {} as Record<string, number>, collagen: 0 },
           );
         }, [dayReservations]);
 
-        // 日付操作
-        const changeDate = (days) => {
-          const newDate = new Date(selectedDate);
-          newDate.setDate(newDate.getDate() + days);
-          setSelectedDate(newDate);
-        };
         const dateDisplay = useMemo(() => {
           const d = selectedDate;
           const days = ["日", "月", "火", "水", "木", "金", "土"];
@@ -396,6 +417,7 @@ const { useState, useEffect, useMemo } = React;
         // 登録処理
         const handleSubmit = async () => {
           if (!inputName.trim()) return alert("名前を入力してください");
+          if (!user) return;
           localStorage.setItem("my_name_seeding", inputName);
           const { collection, addDoc } = window.firebaseModules;
           const dateStr = selectedDate.toISOString().split("T")[0];
@@ -431,7 +453,8 @@ const { useState, useEffect, useMemo } = React;
         };
 
         // 削除処理
-        const handleDeleteClick = (item) => {
+        const handleDeleteClick = (item: SeedingRecord) => {
+          if (!user) return;
           setDeleteTarget(item);
           setDeletePassword("");
           if (item.uid === user.uid) {
@@ -440,7 +463,7 @@ const { useState, useEffect, useMemo } = React;
             setIsDeleteModalOpen(true);
           }
         };
-        const executeDelete = async (docId) => {
+        const executeDelete = async (docId: string) => {
           const { doc, deleteDoc } = window.firebaseModules;
           try {
             await deleteDoc(
@@ -461,6 +484,7 @@ const { useState, useEffect, useMemo } = React;
           }
         };
         const handleAdminDelete = async () => {
+          if (!deleteTarget) return;
           const hash = await sha256(deletePassword);
           if (hash === ADMIN_HASH) executeDelete(deleteTarget.id);
           else alert("パスワードが違います");
@@ -797,5 +821,5 @@ const { useState, useEffect, useMemo } = React;
         );
       }
 
-      const root = ReactDOM.createRoot(document.getElementById("root"));
+      const root = ReactDOM.createRoot(document.getElementById("root")!);
       root.render(<App />);
